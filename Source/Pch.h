@@ -3,15 +3,19 @@
 
 #pragma once
 
+#include <algorithm>
 #include <optional>
 #include <string>
 #include <vector>
 #include <map>
 #include <set>
 
+#include <cstdint>
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
+
+#define NOMINMAX
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
