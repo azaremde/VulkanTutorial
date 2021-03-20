@@ -36,3 +36,5 @@ target_include_directories(${projectName} PUBLIC External/GLFW/include ${Vulkan_
 target_include_directories(${projectName} PUBLIC External/GLM)
 
 target_link_libraries(${projectName} glfw ${Vulkan_LIBRARY})
+
+file(COPY Shaders DESTINATION ${CMAKE_BINARY_DIR})
