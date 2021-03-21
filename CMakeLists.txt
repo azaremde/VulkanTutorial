@@ -11,7 +11,7 @@ file(GLOB src
 	Source/**/**/*.cpp
 )
 
-add_executable(${projectName} ${src})
+add_executable(${projectName} ${src} "Source/EdelVkDebugger.h" "Source/EdelVkDebugger.cpp")
 
 target_precompile_headers(${projectName} PUBLIC Source/Pch.h)
 
