@@ -115,9 +115,9 @@ void EdelVkDevice::CreateLogicalDevice(const VkInstance& instance, bool enableVa
 	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
 }
 
-void EdelVkDevice::Init(const VkInstance& instance, bool enableValidationLayers, VkSurfaceKHR& _surface)
+void EdelVkDevice::Init(const VkInstance& instance, bool enableValidationLayers)
 {
-	surface = _surface;
+	//surface = _surface;
 
 	PickPhysicalDevice(instance, enableValidationLayers);
 	CreateLogicalDevice(instance, enableValidationLayers);
@@ -126,6 +126,11 @@ void EdelVkDevice::Init(const VkInstance& instance, bool enableValidationLayers,
 void EdelVkDevice::Destroy()
 {
 	vkDestroyDevice(device, nullptr);
+}
+
+VkSurfaceKHR& EdelVkDevice::GetSurface()
+{
+	return surface;
 }
 
 VkQueue& EdelVkDevice::GetGraphicsQueue()

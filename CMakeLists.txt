@@ -14,9 +14,9 @@ file(GLOB src
 
 add_executable(${projectName} ${src} "Source/SwapChain/EdelVkSwapChain.h")
 
-target_precompile_headers(${projectName} PUBLIC Source/Pch.h)
+target_precompile_headers(${projectName} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Source/Pch.h)
 
-target_include_directories(${projectName} PUBLIC Source)
+target_include_directories(${projectName} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Source)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
 

@@ -38,9 +38,10 @@ private:
 	bool IsDeviceSuitable(VkPhysicalDevice device);
 
 public:
-	void Init(const VkInstance& instance, bool enableValidationLayers, VkSurfaceKHR& _surface);
+	void Init(const VkInstance& instance, bool enableValidationLayers);
 	void Destroy();
 
+	VkSurfaceKHR& GetSurface();
 	VkQueue& GetGraphicsQueue();
 	VkQueue& GetPresentQueue();
 	QueueFamilyIndices& GetIndices();
