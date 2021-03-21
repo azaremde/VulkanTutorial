@@ -6,12 +6,13 @@ set(projectVersion  0.1)
 project(${projectName} VERSION ${projectVersion})
 
 file(GLOB src
-	Source/*.cpp
-	Source/**/*.cpp
-	Source/**/**/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Source/**/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Source/**/**/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Source/**/**/**/*.cpp
 )
 
-add_executable(${projectName} ${src} "Source/EdelVkDebugger.h" "Source/EdelVkDebugger.cpp")
+add_executable(${projectName} ${src} "Source/SwapChain/EdelVkSwapChain.h")
 
 target_precompile_headers(${projectName} PUBLIC Source/Pch.h)
 
