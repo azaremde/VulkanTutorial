@@ -17,6 +17,8 @@ public:
 	LveWindow& operator=(const LveWindow&) = delete;
 
 	inline bool shouldClose() { return glfwWindowShouldClose(window); }
+	inline VkExtent2D getExtent() { return { static_cast<uint32_t>(width), static_cast<uint32_t>(height) }; }
+
 	void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
 
 private:
