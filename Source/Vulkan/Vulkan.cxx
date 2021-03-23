@@ -2,11 +2,13 @@
 
 #include "Debug.hpp"
 
-Vulkan::Vulkan()
+Vulkan::Vulkan(Window& _window) : window{ _window }
 {
 	CreateInstance();
 	CreateDebugger();
+	CreateSurface();
 	CreateGPU();
+	CreateSwapChain();
 }
 
 void Vulkan::CreateInstance()
@@ -87,9 +89,19 @@ std::vector<const char*> Vulkan::GetRequiredExtensions()
 	return extensions;
 }
 
+void Vulkan::CreateSurface()
+{
+	surface = new Surface(instance, window);
+}
+
+void Vulkan::DestroySurface()
+{
+	delete surface;
+}
+
 void Vulkan::CreateGPU()
 {
-	gpu = new GPU(instance);
+	gpu = new GPU(instance, *surface);
 }
 
 void Vulkan::DestroyGPU()
@@ -97,9 +109,21 @@ void Vulkan::DestroyGPU()
 	delete gpu;
 }
 
+void Vulkan::CreateSwapChain()
+{
+	swapChain = new SwapChain(instance, window);
+}
+
+void Vulkan::DestroySwapChain()
+{
+	delete swapChain;
+}
+
 Vulkan::~Vulkan()
 {
+	DestroySwapChain();
 	DestroyGPU();
+	DestroySurface();
 	DestroyDebugger();
 	DestroyInstance();
 }

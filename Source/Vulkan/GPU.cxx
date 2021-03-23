@@ -1,6 +1,8 @@
 #include "GPU.hpp"
 
-GPU::GPU(VkInstance& _instance) : instance{_instance}
+#include <set>
+
+GPU::GPU(VkInstance& _instance, Surface& _surface) : instance{ _instance }, surface{ _surface }
 {
 	PickPhysicalDevice();
 	CreateLogicalDevice();
@@ -43,12 +45,12 @@ void GPU::PickPhysicalDevice()
 
 bool GPU::IsBestDevice(const VkPhysicalDevice& physDevice)
 {
-	queueFamilyIndices = FindQueueFamilies(physDevice);
+	queueFamilyIndices = FindQueueFamilies(physDevice, surface.GetSurface());
 
 	return queueFamilyIndices.IsComplete();
 }
 
-QueueFamilyIndices GPU::FindQueueFamilies(const VkPhysicalDevice& physDevice)
+QueueFamilyIndices GPU::FindQueueFamilies(const VkPhysicalDevice& physDevice, const VkSurfaceKHR& surface)
 {
 	QueueFamilyIndices indices;
 
@@ -65,6 +67,20 @@ QueueFamilyIndices GPU::FindQueueFamilies(const VkPhysicalDevice& physDevice)
 		{
 			indices.graphicsFamily = i;
 		}
+
+		VkBool32 presentSupport{ false };
+		vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, i, surface, &presentSupport);
+
+		if (presentSupport)
+		{
+			indices.presentFamily = i;
+		}
+
+		if (indices.IsComplete())
+		{
+			break;
+		}
+
 		i++;
 	}
 
@@ -73,18 +89,30 @@ QueueFamilyIndices GPU::FindQueueFamilies(const VkPhysicalDevice& physDevice)
 
 void GPU::CreateLogicalDevice()
 {
-	VkDeviceQueueCreateInfo queueCreateInfo{};
-	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	queueCreateInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-	queueCreateInfo.queueCount = 1;
+	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+	std::set<uint32_t> uniqueQueueFamilies = {
+		queueFamilyIndices.graphicsFamily.value(),
+		queueFamilyIndices.presentFamily.value()
+	};
+
 	float queuePriority{ 1.0f };
-	queueCreateInfo.pQueuePriorities = &queuePriority;
+
+	for (uint32_t queueFamily : uniqueQueueFamilies)
+	{
+		VkDeviceQueueCreateInfo queueCreateInfo{};
+		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueCreateInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+		queueCreateInfo.queueCount = 1;
+		queueCreateInfo.pQueuePriorities = &queuePriority;
+		queueCreateInfos.emplace_back(queueCreateInfo);
+	}
+	//VkDeviceQueueCreateInfo queueCreateInfo{};
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	createInfo.pQueueCreateInfos = &queueCreateInfo;
-	createInfo.queueCreateInfoCount = 1;
+	createInfo.pQueueCreateInfos = queueCreateInfos.data();
+	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	createInfo.pEnabledFeatures = &deviceFeatures;
 
 	createInfo.enabledExtensionCount = 0;
@@ -93,6 +121,7 @@ void GPU::CreateLogicalDevice()
 	VulkanCheck(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device), "Failed to create logical device.");
 
 	vkGetDeviceQueue(device, queueFamilyIndices.graphicsFamily.value(), 0, &queues.graphics);
+	vkGetDeviceQueue(device, queueFamilyIndices.presentFamily.value(), 0, &queues.present);
 }
 
 void GPU::DestroyLogicalDevice()

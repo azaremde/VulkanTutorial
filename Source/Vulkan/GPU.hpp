@@ -5,31 +5,36 @@
 
 #include "Pch.hpp"
 
+#include "Surface.hpp"
+
 struct QueueFamilyIndices
 {
 	std::optional<uint32_t> graphicsFamily;
+	std::optional<uint32_t> presentFamily;
 
 	bool IsComplete()
 	{
-		return graphicsFamily.has_value();
+		return graphicsFamily.has_value() && presentFamily.has_value();
 	}
 };
 
 struct Queues
 {
 	VkQueue graphics;
+	VkQueue present;
 };
 
 class GPU
 {
 private:
 	VkInstance& instance;
+	Surface& surface;
 
 	VkPhysicalDevice physicalDevice { VK_NULL_HANDLE };
 	void PickPhysicalDevice();
 	bool IsBestDevice(const VkPhysicalDevice& physDevice);
 	QueueFamilyIndices queueFamilyIndices{};
-	static QueueFamilyIndices FindQueueFamilies(const VkPhysicalDevice& physDevice);
+	static QueueFamilyIndices FindQueueFamilies(const VkPhysicalDevice& physDevice, const VkSurfaceKHR& surface);
 
 	VkDevice device{ VK_NULL_HANDLE };
 	Queues queues;
@@ -40,7 +45,7 @@ private:
 	GPU& operator=(GPU&) = delete;
 
 public:
-	GPU(VkInstance& _instance);
+	GPU(VkInstance& _instance, Surface& _surface);
 	~GPU();
 
 	VkPhysicalDevice& PhysicalDevice();

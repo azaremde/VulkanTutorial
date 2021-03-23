@@ -6,17 +6,17 @@ set(projectVersion  0.1)
 project(${projectName} VERSION ${projectVersion})
 
 file(GLOB src
-	Source/*.cxx
-	Source/**/*.cxx
-	Source/**/**/*.cxx
-	Source/**/**/**/*.cxx
+	${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cxx
+	${CMAKE_CURRENT_SOURCE_DIR}/Source/**/*.cxx
+	${CMAKE_CURRENT_SOURCE_DIR}/Source/**/**/*.cxx
+	${CMAKE_CURRENT_SOURCE_DIR}/Source/**/**/**/*.cxx
 )
 
 add_executable(${projectName} ${src})
 
-target_precompile_headers(${projectName} PUBLIC Source/Pch.hpp)
+target_precompile_headers(${projectName} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Source/Pch.hpp)
 
-target_include_directories(${projectName} PUBLIC Source)
+target_include_directories(${projectName} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Source)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
 

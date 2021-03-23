@@ -10,7 +10,7 @@ class App
 {
 private:
 	Window window { 800, 600, "Vulkan App" };
-	Vulkan vulkan;
+	Vulkan vulkan { window };
 
 	void MainLoop();
 

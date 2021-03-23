@@ -5,11 +5,16 @@
 
 #include "Pch.hpp"
 
+#include "Core/Window.hpp"
+#include "Surface.hpp"
 #include "GPU.hpp"
+#include "SwapChain.hpp"
 
 class Vulkan
 {
 private:
+	Window& window;
+
 	VkInstance instance;
 	void CreateInstance();
 	void DestroyInstance();
@@ -17,9 +22,17 @@ private:
 	void CreateDebugger();
 	void DestroyDebugger();
 
+	Surface* surface;
+	void CreateSurface();
+	void DestroySurface();
+
 	GPU* gpu;
 	void CreateGPU();
 	void DestroyGPU();
+
+	SwapChain* swapChain;
+	void CreateSwapChain();
+	void DestroySwapChain();
 
 	Vulkan(const Vulkan&) = delete;
 	Vulkan& operator=(const Vulkan&) = delete;
@@ -27,8 +40,7 @@ private:
 	std::vector<const char*> GetRequiredExtensions();
 
 public:
-
-	Vulkan();
+	Vulkan(Window& _window);
 	~Vulkan();
 
 };

@@ -21,6 +21,8 @@ public:
 
 	const bool ShouldClose() const;
 	void PollEvents() const;
+
+	GLFWwindow* GetGlfwWindow();
 };
 
 #endif
