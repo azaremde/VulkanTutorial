@@ -15,12 +15,14 @@ struct QueueFamilyIndices
 	}
 };
 
+struct Queues
+{
+	VkQueue graphics;
+};
+
 class GPU
 {
 private:
-	GPU(const GPU&) = delete;
-	GPU& operator=(GPU&) = delete;
-
 	VkInstance& instance;
 
 	VkPhysicalDevice physicalDevice { VK_NULL_HANDLE };
@@ -30,8 +32,12 @@ private:
 	static QueueFamilyIndices FindQueueFamilies(const VkPhysicalDevice& physDevice);
 
 	VkDevice device{ VK_NULL_HANDLE };
+	Queues queues;
 	void CreateLogicalDevice();
 	void DestroyLogicalDevice();
+
+	GPU(const GPU&) = delete;
+	GPU& operator=(GPU&) = delete;
 
 public:
 	GPU(VkInstance& _instance);

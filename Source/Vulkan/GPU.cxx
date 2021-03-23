@@ -91,6 +91,8 @@ void GPU::CreateLogicalDevice()
 	createInfo.enabledLayerCount = 0;
 
 	VulkanCheck(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device), "Failed to create logical device.");
+
+	vkGetDeviceQueue(device, queueFamilyIndices.graphicsFamily.value(), 0, &queues.graphics);
 }
 
 void GPU::DestroyLogicalDevice()
