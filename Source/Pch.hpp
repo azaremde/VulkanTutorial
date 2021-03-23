@@ -6,15 +6,19 @@
 #include <algorithm>
 #include <optional>
 #include <string>
+#include <memory>
 #include <vector>
 #include <map>
 #include <set>
 
-#include <stdexcept>
 #include <iostream>
-#include <cstdint>
-#include <cstdlib>
 #include <fstream>
+
+#include <cstdlib>
+#include <cstdint>
+
+#include <stdexcept>
+#include <cassert>
 
 #define NOMINMAX
 
@@ -24,18 +28,13 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
-template <typename T>
-using Avec		= std::vector<T>;
+#define LogOut(x) std::cout << x << '\n'
+#define ErrOut(x) std::cerr << x << '\n'
 
-template <typename T1, typename T2>
-using Amap		= std::map<T1, T2>;
-
-using Astr		= std::string;
-
-using Aint		= GLint;
-using Auint		= GLuint;
-using Afloat	= GLfloat;
-
-#define AMlog(x) std::cout << x << '\n'
+#define VulkanCheck(what, err)\
+	if (what != VK_SUCCESS)\
+	{\
+		throw std::runtime_error(err);\
+	}
 
 #endif

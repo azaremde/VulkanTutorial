@@ -6,14 +6,15 @@ set(projectVersion  0.1)
 project(${projectName} VERSION ${projectVersion})
 
 file(GLOB src
-	Source/*.cpp
-	Source/**/*.cpp
-	Source/**/**/*.cpp
+	Source/*.cxx
+	Source/**/*.cxx
+	Source/**/**/*.cxx
+	Source/**/**/**/*.cxx
 )
 
 add_executable(${projectName} ${src})
 
-target_precompile_headers(${projectName} PUBLIC Source/Pch.h)
+target_precompile_headers(${projectName} PUBLIC Source/Pch.hpp)
 
 target_include_directories(${projectName} PUBLIC Source)
 
