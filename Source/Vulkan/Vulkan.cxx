@@ -9,6 +9,7 @@ Vulkan::Vulkan(Window& _window) : window{ _window }
 	CreateSurface();
 	CreateGPU();
 	CreateSwapChain();
+	CreatePipeline();
 }
 
 void Vulkan::CreateInstance()
@@ -119,8 +120,19 @@ void Vulkan::DestroySwapChain()
 	delete swapChain;
 }
 
+void Vulkan::CreatePipeline()
+{
+	pipeline = new Pipeline(*gpu, *swapChain);
+}
+
+void Vulkan::DestroyPipeline()
+{
+	delete pipeline;
+}
+
 Vulkan::~Vulkan()
 {
+	DestroyPipeline();
 	DestroySwapChain();
 	DestroyGPU();
 	DestroySurface();

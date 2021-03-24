@@ -31,10 +31,20 @@
 #define LogOut(x) std::cout << x << '\n'
 #define ErrOut(x) std::cerr << x << '\n'
 
+#ifndef NDEBUG
+#	define DebugLogOut(x) std::cout << x << '\n'
+#else
+#	define DebugLogOut(x) ((void)0)
+#endif
+
 #define VulkanCheck(what, err)\
 	if (what != VK_SUCCESS)\
 	{\
 		throw std::runtime_error(err);\
 	}
+
+#define RemoveCopyConstructor(Class)\
+	Class(const Class&) = delete;\
+	Class& operator=(const Class&) = delete
 
 #endif

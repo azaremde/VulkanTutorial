@@ -34,6 +34,10 @@ private:
 	SwapChain& operator=(SwapChain&) = delete;
 
 public:
+	const VkExtent2D& GetSwapChainExtent() const;
+	const VkFormat& GetImageFormat() const;
+	const std::vector<VkImageView>& GetSwapChainImageViews() const;
+
 	SwapChain(VkInstance& _instance, GPU& _gpu, Surface& _surface, Window& _window);
 	~SwapChain();
 };

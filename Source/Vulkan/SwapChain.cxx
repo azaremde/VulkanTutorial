@@ -107,6 +107,21 @@ SwapChain::~SwapChain()
 	vkDestroySwapchainKHR(gpu.Device(), swapChain, nullptr);
 }
 
+const VkExtent2D& SwapChain::GetSwapChainExtent() const
+{
+	return swapChainExtent;
+}
+
+const VkFormat& SwapChain::GetImageFormat() const
+{
+	return swapChainImageFormat;
+}
+
+const std::vector<VkImageView>& SwapChain::GetSwapChainImageViews() const
+{
+	return swapChainImageViews;
+}
+
 namespace SwapChainUtil
 {
 	VkSurfaceFormatKHR ChooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)

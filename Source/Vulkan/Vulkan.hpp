@@ -9,6 +9,7 @@
 #include "Surface.hpp"
 #include "GPU/GPU.hpp"
 #include "SwapChain.hpp"
+#include "Pipeline/Pipeline.hpp"
 
 class Vulkan
 {
@@ -33,6 +34,10 @@ private:
 	SwapChain* swapChain;
 	void CreateSwapChain();
 	void DestroySwapChain();
+
+	Pipeline* pipeline;
+	void CreatePipeline();
+	void DestroyPipeline();
 
 	Vulkan(const Vulkan&) = delete;
 	Vulkan& operator=(const Vulkan&) = delete;

@@ -38,4 +38,12 @@ target_include_directories(${projectName} PUBLIC External/GLM)
 
 target_link_libraries(${projectName} glfw ${Vulkan_LIBRARY})
 
+if(WIN32)
+	add_custom_command(
+		TARGET ${projectName}
+		POST_BUILD
+		COMMAND cmd ${CMAKE_CURRENT_SOURCE_DIR}Compile.bat
+	)
+endif(WIN32)
+
 file(COPY Shaders DESTINATION ${CMAKE_BINARY_DIR})
