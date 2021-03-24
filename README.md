@@ -1,2 +1,2 @@
 # vulkan-tutorial
-My implementation of https://vulkan-tutorial.com/
+My progress of learning the Vulkan API.
