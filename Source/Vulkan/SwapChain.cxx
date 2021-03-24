@@ -54,6 +54,13 @@ SwapChain::SwapChain(VkInstance& _instance, GPU& _gpu, Surface& _surface, Window
 		vkCreateSwapchainKHR(gpu.Device(), &createInfo, nullptr, &swapChain),
 		"Failed to create swap chain."
 	);
+
+	vkGetSwapchainImagesKHR(gpu.Device(), swapChain, &imageCount, nullptr);
+	swapChainImages.resize(imageCount);
+	vkGetSwapchainImagesKHR(gpu.Device(), swapChain, &imageCount, swapChainImages.data());
+
+	swapChainImageFormat = surfaceFormat.format;
+	swapChainExtent = extent;
 }
 
 SwapChain::~SwapChain()
