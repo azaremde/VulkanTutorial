@@ -30,3 +30,8 @@ GLFWwindow* Window::GetGlfwWindow()
 {
 	return window;
 }
+
+void Window::QueryFramebufferSize(int* width, int* height)
+{
+	glfwGetFramebufferSize(window, width, height);
+}

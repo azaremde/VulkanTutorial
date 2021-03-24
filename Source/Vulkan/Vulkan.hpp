@@ -7,7 +7,7 @@
 
 #include "Core/Window.hpp"
 #include "Surface.hpp"
-#include "GPU.hpp"
+#include "GPU/GPU.hpp"
 #include "SwapChain.hpp"
 
 class Vulkan

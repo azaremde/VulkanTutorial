@@ -23,6 +23,8 @@ public:
 	void PollEvents() const;
 
 	GLFWwindow* GetGlfwWindow();
+
+	void QueryFramebufferSize(int* width, int* height);
 };
 
 #endif

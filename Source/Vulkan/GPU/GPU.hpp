@@ -1,28 +1,15 @@
-#ifndef __Vulkan_GPU_hpp__
-#define __Vulkan_GPU_hpp__
+#ifndef __Vulkan_GPU_GPU_hpp__
+#define __Vulkan_GPU_GPU_hpp__
 
 #pragma once
 
 #include "Pch.hpp"
 
-#include "Surface.hpp"
+#include "Vulkan/Surface.hpp"
 
-struct QueueFamilyIndices
-{
-	std::optional<uint32_t> graphicsFamily;
-	std::optional<uint32_t> presentFamily;
+#include "SwapChainSupport.hpp"
 
-	bool IsComplete()
-	{
-		return graphicsFamily.has_value() && presentFamily.has_value();
-	}
-};
-
-struct Queues
-{
-	VkQueue graphics;
-	VkQueue present;
-};
+#include "Queues.hpp"
 
 class GPU
 {
@@ -31,15 +18,17 @@ private:
 	Surface& surface;
 
 	VkPhysicalDevice physicalDevice { VK_NULL_HANDLE };
+	SwapChainSupport swapChainSupport{};
 	void PickPhysicalDevice();
 	bool IsBestDevice(const VkPhysicalDevice& physDevice);
-	QueueFamilyIndices queueFamilyIndices{};
-	static QueueFamilyIndices FindQueueFamilies(const VkPhysicalDevice& physDevice, const VkSurfaceKHR& surface);
 
 	VkDevice device{ VK_NULL_HANDLE };
 	Queues queues;
 	void CreateLogicalDevice();
 	void DestroyLogicalDevice();
+
+	inline static const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	static bool CheckDeviceExtensionSupport(const VkPhysicalDevice& physDevice);
 
 	GPU(const GPU&) = delete;
 	GPU& operator=(GPU&) = delete;
@@ -50,6 +39,10 @@ public:
 
 	VkPhysicalDevice& PhysicalDevice();
 	VkDevice& Device();
+
+	Queues& GetQueues();
+
+	SwapChainSupport& GetSwapChainSupport();
 };
 
 #endif

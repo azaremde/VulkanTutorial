@@ -45,54 +45,44 @@ void GPU::PickPhysicalDevice()
 
 bool GPU::IsBestDevice(const VkPhysicalDevice& physDevice)
 {
-	queueFamilyIndices = FindQueueFamilies(physDevice, surface.GetSurface());
+	queues.familyIndices = QueueFamilyIndices::Find(physDevice, surface.GetSurface());
 
-	return queueFamilyIndices.IsComplete();
-}
+	bool swapChainAdequate{ false };
+	bool extensionsSupported = CheckDeviceExtensionSupport(physDevice);
 
-QueueFamilyIndices GPU::FindQueueFamilies(const VkPhysicalDevice& physDevice, const VkSurfaceKHR& surface)
-{
-	QueueFamilyIndices indices;
-
-	uint32_t queueFamilyCount{ 0 };
-	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamilyCount, nullptr);
-
-	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &queueFamilyCount, queueFamilies.data());
-
-	uint32_t i{ 0 };
-	for (const auto& queueFamily : queueFamilies)
+	if (extensionsSupported)
 	{
-		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-		{
-			indices.graphicsFamily = i;
-		}
-
-		VkBool32 presentSupport{ false };
-		vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, i, surface, &presentSupport);
-
-		if (presentSupport)
-		{
-			indices.presentFamily = i;
-		}
-
-		if (indices.IsComplete())
-		{
-			break;
-		}
-
-		i++;
+		swapChainSupport = SwapChainSupport::Query(physDevice, surface.GetSurface());
+		swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 	}
 
-	return indices;
+	return queues.familyIndices.IsComplete() && extensionsSupported && swapChainAdequate;
+}
+
+bool GPU::CheckDeviceExtensionSupport(const VkPhysicalDevice& physDevice)
+{
+	uint32_t extensionCount{ 0 };
+	vkEnumerateDeviceExtensionProperties(physDevice, nullptr, &extensionCount, nullptr);
+
+	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+	vkEnumerateDeviceExtensionProperties(physDevice, nullptr, &extensionCount, availableExtensions.data());
+
+	std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+	for (const auto& extension : availableExtensions)
+	{
+		requiredExtensions.erase(extension.extensionName);
+	}
+
+	return requiredExtensions.empty();
 }
 
 void GPU::CreateLogicalDevice()
 {
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 	std::set<uint32_t> uniqueQueueFamilies = {
-		queueFamilyIndices.graphicsFamily.value(),
-		queueFamilyIndices.presentFamily.value()
+		queues.familyIndices.graphicsFamily.value(),
+		queues.familyIndices.presentFamily.value()
 	};
 
 	float queuePriority{ 1.0f };
@@ -101,12 +91,11 @@ void GPU::CreateLogicalDevice()
 	{
 		VkDeviceQueueCreateInfo queueCreateInfo{};
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queueCreateInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+		queueCreateInfo.queueFamilyIndex = queues.familyIndices.graphicsFamily.value();
 		queueCreateInfo.queueCount = 1;
 		queueCreateInfo.pQueuePriorities = &queuePriority;
 		queueCreateInfos.emplace_back(queueCreateInfo);
 	}
-	//VkDeviceQueueCreateInfo queueCreateInfo{};
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	VkDeviceCreateInfo createInfo{};
@@ -115,13 +104,15 @@ void GPU::CreateLogicalDevice()
 	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	createInfo.pEnabledFeatures = &deviceFeatures;
 
-	createInfo.enabledExtensionCount = 0;
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+
 	createInfo.enabledLayerCount = 0;
 
 	VulkanCheck(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device), "Failed to create logical device.");
 
-	vkGetDeviceQueue(device, queueFamilyIndices.graphicsFamily.value(), 0, &queues.graphics);
-	vkGetDeviceQueue(device, queueFamilyIndices.presentFamily.value(), 0, &queues.present);
+	vkGetDeviceQueue(device, queues.familyIndices.graphicsFamily.value(), 0, &queues.graphics);
+	vkGetDeviceQueue(device, queues.familyIndices.presentFamily.value(), 0, &queues.present);
 }
 
 void GPU::DestroyLogicalDevice()
@@ -137,4 +128,14 @@ VkPhysicalDevice& GPU::PhysicalDevice()
 VkDevice& GPU::Device()
 {
 	return device;
+}
+
+Queues& GPU::GetQueues()
+{
+	return queues;
+}
+
+SwapChainSupport& GPU::GetSwapChainSupport()
+{
+	return swapChainSupport;
 }

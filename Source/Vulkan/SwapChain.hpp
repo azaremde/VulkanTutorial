@@ -7,21 +7,33 @@
 
 #include "Core/Window.hpp"
 
+#include "Vulkan/GPU/GPU.hpp"
+#include "Vulkan/Surface.hpp"
+
 class SwapChain
 {
 private:
 	VkInstance& instance;
+
+	GPU& gpu;
+	Surface& surface;
 	Window& window;
 
-	//VkSurfaceKHR surface;
-	//void CreateSurface();
+	VkSwapchainKHR swapChain;
 
 	SwapChain(const SwapChain&) = delete;
 	SwapChain& operator=(SwapChain&) = delete;
 
 public:
-	SwapChain(VkInstance& _instance, Window& _window);
+	SwapChain(VkInstance& _instance, GPU& _gpu, Surface& _surface, Window& _window);
 	~SwapChain();
 };
+
+namespace SwapChainUtil
+{
+	static VkSurfaceFormatKHR ChooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+	static VkPresentModeKHR ChoosePresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+	static VkExtent2D ChooseSwapChainExtent(const VkSurfaceCapabilitiesKHR& capabilities, Window& window);
+}
 
 #endif

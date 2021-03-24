@@ -111,7 +111,7 @@ void Vulkan::DestroyGPU()
 
 void Vulkan::CreateSwapChain()
 {
-	swapChain = new SwapChain(instance, window);
+	swapChain = new SwapChain(instance, *gpu, *surface, window);
 }
 
 void Vulkan::DestroySwapChain()
