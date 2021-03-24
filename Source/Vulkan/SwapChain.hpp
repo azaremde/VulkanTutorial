@@ -21,9 +21,14 @@ private:
 
 	VkSwapchainKHR swapChain;
 
+	// Todo: move swap chain images to their own class.
 	std::vector<VkImage> swapChainImages;
 	VkFormat swapChainImageFormat;
 	VkExtent2D swapChainExtent;
+	void CreateSwapChain();
+
+	std::vector<VkImageView> swapChainImageViews;
+	void CreateImageViews();
 
 	SwapChain(const SwapChain&) = delete;
 	SwapChain& operator=(SwapChain&) = delete;
