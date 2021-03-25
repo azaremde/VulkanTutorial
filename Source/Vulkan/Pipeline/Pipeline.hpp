@@ -8,6 +8,7 @@
 #include "Vulkan/Shaders/Shader.hpp"
 #include "Vulkan/GPU/GPU.hpp"
 #include "Vulkan/SwapChain.hpp"
+#include "Vulkan/Framebuffers/Framebuffer.hpp"
 
 #include "RenderPass.hpp"
 
@@ -26,6 +27,7 @@ private:
 	Shader* shader;
 
 	// Temp
+	Framebuffer* outputFramebuffer;
 
 
 	Pipeline(const Pipeline&) = delete;
@@ -34,6 +36,12 @@ private:
 public:
 	Pipeline(GPU& _gpu, SwapChain& _swapChain);
 	~Pipeline();
+
+	const RenderPass& GetRenderPass() const;
+	const VkPipeline& GetPipeline() const;
+
+	// MAKE IT CONST
+	Framebuffer& GetOutputFramebuffer();
 };
 
 #endif

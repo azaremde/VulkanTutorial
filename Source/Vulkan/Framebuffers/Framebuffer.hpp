@@ -24,6 +24,8 @@ private:
 public:
 	Framebuffer(GPU& _gpu, SwapChain& _swapChain, RenderPass& _renderPass);
 	~Framebuffer();
+
+	const std::vector<VkFramebuffer>& GetSwapChainFramebuffers() const;
 };
 
 #endif

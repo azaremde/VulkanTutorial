@@ -131,11 +131,15 @@ Pipeline::Pipeline(GPU& _gpu, SwapChain& _swapChain) : gpu{ _gpu }, swapChain{ _
 		"Failed to create pipeline."
 	);
 
+	outputFramebuffer = new Framebuffer(gpu, swapChain, *renderPass);
+
 	DebugLogOut("Pipeline created.");
 }
 
 Pipeline::~Pipeline()
 {
+	delete outputFramebuffer;
+
 	vkDestroyPipeline(gpu.Device(), pipeline, nullptr);
 
 	delete renderPass;
@@ -145,4 +149,19 @@ Pipeline::~Pipeline()
 	DebugLogOut("Pipeline destroyed.");
 
 	delete shader;
+}
+
+const RenderPass& Pipeline::GetRenderPass() const
+{
+	return *renderPass;
+}
+
+const VkPipeline& Pipeline::GetPipeline() const
+{
+	return pipeline;
+}
+
+Framebuffer& Pipeline::GetOutputFramebuffer()
+{
+	return *outputFramebuffer;
 }

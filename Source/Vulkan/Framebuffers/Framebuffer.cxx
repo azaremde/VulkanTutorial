@@ -32,3 +32,8 @@ Framebuffer::~Framebuffer()
         vkDestroyFramebuffer(gpu.Device(), framebuffer, nullptr);
     }
 }
+
+const std::vector<VkFramebuffer>& Framebuffer::GetSwapChainFramebuffers() const
+{
+    return swapChainFramebuffers;
+}

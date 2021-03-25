@@ -107,6 +107,11 @@ SwapChain::~SwapChain()
 	vkDestroySwapchainKHR(gpu.Device(), swapChain, nullptr);
 }
 
+const VkSwapchainKHR& SwapChain::GetSwapChain() const
+{
+	return swapChain;
+}
+
 const VkExtent2D& SwapChain::GetSwapChainExtent() const
 {
 	return swapChainExtent;
@@ -120,6 +125,11 @@ const VkFormat& SwapChain::GetImageFormat() const
 const std::vector<VkImageView>& SwapChain::GetSwapChainImageViews() const
 {
 	return swapChainImageViews;
+}
+
+const std::vector<VkImage>& SwapChain::GetSwapChainImages() const
+{
+	return swapChainImages;
 }
 
 namespace SwapChainUtil

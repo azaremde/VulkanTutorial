@@ -10,6 +10,7 @@ Vulkan::Vulkan(Window& _window) : window{ _window }
 	CreateGPU();
 	CreateSwapChain();
 	CreatePipeline();
+	CreateDrawing();
 }
 
 void Vulkan::CreateInstance()
@@ -130,8 +131,29 @@ void Vulkan::DestroyPipeline()
 	delete pipeline;
 }
 
+void Vulkan::CreateDrawing()
+{
+	drawing = new Drawing(*gpu, pipeline->GetOutputFramebuffer(), *pipeline, *swapChain);
+}
+
+void Vulkan::DestroyDrawing()
+{
+	delete drawing;
+}
+
+void Vulkan::Draw()
+{
+	drawing->Draw();
+}
+
+void Vulkan::WaitForIdle()
+{
+	drawing->WaitForIdle();
+}
+
 Vulkan::~Vulkan()
 {
+	DestroyDrawing();
 	DestroyPipeline();
 	DestroySwapChain();
 	DestroyGPU();

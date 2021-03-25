@@ -10,6 +10,7 @@
 #include "GPU/GPU.hpp"
 #include "SwapChain.hpp"
 #include "Pipeline/Pipeline.hpp"
+#include "Drawing.hpp"
 
 class Vulkan
 {
@@ -39,6 +40,10 @@ private:
 	void CreatePipeline();
 	void DestroyPipeline();
 
+	Drawing* drawing;
+	void CreateDrawing();
+	void DestroyDrawing();
+
 	Vulkan(const Vulkan&) = delete;
 	Vulkan& operator=(const Vulkan&) = delete;
 
@@ -47,6 +52,9 @@ private:
 public:
 	Vulkan(Window& _window);
 	~Vulkan();
+
+	void Draw();
+	void WaitForIdle();
 
 };
 
