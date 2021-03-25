@@ -9,7 +9,7 @@
 class App
 {
 private:
-	Window window { 800, 600, "Vulkan App" };
+	Window window { 1024, 768, "Vulkan App" };
 	Vulkan vulkan { window };
 
 	void MainLoop();
