@@ -10,7 +10,7 @@
 #include "GPU/GPU.hpp"
 #include "SwapChain.hpp"
 #include "Pipeline/Pipeline.hpp"
-#include "Drawing.hpp"
+#include "Drawing/Drawing.hpp"
 
 class Vulkan
 {

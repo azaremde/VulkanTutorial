@@ -9,6 +9,7 @@
 #include "Vulkan/Framebuffers/Framebuffer.hpp"
 #include "Vulkan/Pipeline/Pipeline.hpp"
 #include "Vulkan/SwapChain.hpp"
+#include "SyncObjects.hpp"
 
 class Drawing
 {
@@ -22,15 +23,17 @@ private:
 
 	void BindDrawingCommands();
 
-	const int MAX_FRAMES_IN_FLIGHT{ 2 };
-	size_t currentFrame{ 0 };
-	std::vector<VkSemaphore> imageAvailableSemaphores;
-	std::vector<VkSemaphore> renderFinishedSemaphores;
-	std::vector<VkFence> inFlightFences;
-	std::vector<VkFence> imagesInFlight;
-	void CreateSemaphores();
-	void DestroySemaphores();
-
+	SyncObjects* sync;
+	void CreateSyncObjects();
+	void DestroySyncObjects();
+	//const int MAX_FRAMES_IN_FLIGHT{ 2 };
+	//size_t currentFrame{ 0 };
+	//std::vector<VkSemaphore> imageAvailableSemaphores;
+	//std::vector<VkSemaphore> renderFinishedSemaphores;
+	//std::vector<VkFence> inFlightFences;
+	//std::vector<VkFence> imagesInFlight;
+	//void CreateSemaphores();
+	//void DestroySemaphores();
 
 	GPU& gpu;
 	Framebuffer& framebuffer;
