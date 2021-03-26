@@ -7,10 +7,14 @@ Pipeline::Pipeline(GPU& _gpu, SwapChain& _swapChain) : gpu{ _gpu }, swapChain{ _
 	/** Todo: move to the shader class. */
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = 0;
-	vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
-	vertexInputInfo.vertexAttributeDescriptionCount = 0;
-	vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
+
+	auto bindingDescription = Vertex::getBindingDescription();
+	auto attributeDescriptions = Vertex::getAttributeDescriptions();
+
+	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 	/** */
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
@@ -133,6 +137,8 @@ Pipeline::Pipeline(GPU& _gpu, SwapChain& _swapChain) : gpu{ _gpu }, swapChain{ _
 
 	outputFramebuffer = new Framebuffer(gpu, swapChain, *renderPass);
 
+	//createVertexBuffer();
+
 	DebugLogOut("Pipeline created.");
 }
 
@@ -164,4 +170,26 @@ const VkPipeline& Pipeline::GetPipeline() const
 Framebuffer& Pipeline::GetOutputFramebuffer()
 {
 	return *outputFramebuffer;
+}
+
+void Pipeline::BeginRenderPass(const VkCommandBuffer& commandBuffer, const VkFramebuffer& framebuffer) const
+{
+	VkRenderPassBeginInfo renderPassInfo{};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassInfo.renderPass = renderPass->GetRenderPass();
+	renderPassInfo.framebuffer = framebuffer;
+
+	renderPassInfo.renderArea.offset = { 0, 0 };
+	renderPassInfo.renderArea.extent = swapChain.GetSwapChainExtent();
+
+	VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+	renderPassInfo.clearValueCount = 1;
+	renderPassInfo.pClearValues = &clearColor;
+
+	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void Pipeline::EndRenderPass(const VkCommandBuffer& commandBuffer) const
+{
+	vkCmdEndRenderPass(commandBuffer);
 }

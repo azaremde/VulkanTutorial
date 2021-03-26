@@ -11,6 +11,17 @@
 #include "Vulkan/SwapChain.hpp"
 #include "SyncObjects.hpp"
 
+const std::vector<Vertex> vertices = {
+	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{ 0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+	{{ 0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}},
+	{{-0.5f,  0.5f}, {1.0f, 1.0f, 1.0f}}
+}; 
+
+const std::vector<uint16_t> indices = {
+	0, 1, 2, 2, 3, 0
+};
+
 class Drawing
 {
 private:
@@ -21,19 +32,9 @@ private:
 	std::vector<VkCommandBuffer> commandBuffers;
 	void CreateCommandBuffers();
 
-	void BindDrawingCommands();
-
 	SyncObjects* sync;
 	void CreateSyncObjects();
 	void DestroySyncObjects();
-	//const int MAX_FRAMES_IN_FLIGHT{ 2 };
-	//size_t currentFrame{ 0 };
-	//std::vector<VkSemaphore> imageAvailableSemaphores;
-	//std::vector<VkSemaphore> renderFinishedSemaphores;
-	//std::vector<VkFence> inFlightFences;
-	//std::vector<VkFence> imagesInFlight;
-	//void CreateSemaphores();
-	//void DestroySemaphores();
 
 	GPU& gpu;
 	Framebuffer& framebuffer;
@@ -42,6 +43,15 @@ private:
 
 	Drawing(const Drawing&) = delete;
 	Drawing& operator=(const Drawing&) = delete;
+
+	VkBuffer vertexBuffer;
+	VkDeviceMemory vertexBufferMemory;
+	VkBuffer indexBuffer;
+	VkDeviceMemory indexBufferMemory;
+	void createVertexBuffer();
+	void createIndexBuffer();
+	void destroyVertexBuffer();
+	void destroyIndexBuffer();
 
 public:
 	Drawing(GPU& _gpu, Framebuffer& _framebuffer, Pipeline& _pipeline, SwapChain& _swapChain);
