@@ -54,6 +54,8 @@ private:
 	void destroyIndexBuffer();
 
 public:
+	void Destroy();
+
 	Drawing(GPU& _gpu, Framebuffer& _framebuffer, Pipeline& _pipeline, SwapChain& _swapChain);
 	~Drawing();
 

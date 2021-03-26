@@ -142,7 +142,7 @@ Pipeline::Pipeline(GPU& _gpu, SwapChain& _swapChain) : gpu{ _gpu }, swapChain{ _
 	DebugLogOut("Pipeline created.");
 }
 
-Pipeline::~Pipeline()
+void Pipeline::Destroy()
 {
 	delete outputFramebuffer;
 
@@ -155,6 +155,11 @@ Pipeline::~Pipeline()
 	DebugLogOut("Pipeline destroyed.");
 
 	delete shader;
+}
+
+Pipeline::~Pipeline()
+{
+	Destroy();
 }
 
 const RenderPass& Pipeline::GetRenderPass() const

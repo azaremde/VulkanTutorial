@@ -34,6 +34,8 @@ private:
 	SwapChain& operator=(SwapChain&) = delete;
 
 public:
+	void Destroy();
+
 	const VkSwapchainKHR& GetSwapChain() const;
 	const VkExtent2D& GetSwapChainExtent() const;
 	const VkFormat& GetImageFormat() const;

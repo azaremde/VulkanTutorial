@@ -69,6 +69,7 @@ private:
 	Pipeline& operator=(const Pipeline&) = delete;
 
 public:
+	void Destroy();
 
 	Pipeline(GPU& _gpu, SwapChain& _swapChain);
 	~Pipeline();

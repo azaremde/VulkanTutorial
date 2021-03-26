@@ -1,101 +1,12 @@
 #include "Drawing.hpp"
 
-uint32_t findMemoryType(const VkPhysicalDevice& physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
-{
-	VkPhysicalDeviceMemoryProperties memProperties;
-	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
-
-	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) 
-	{
-		if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) 
-		{
-			return i;
-		}
-	}
-
-	throw std::runtime_error("failed to find suitable memory type!");
-}
-
-void copyBuffer(const VkDevice& device, const VkCommandPool& commandPool, const VkQueue& graphicsQueue, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) 
-{
-	VkCommandBufferAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = commandPool;
-	allocInfo.commandBufferCount = 1;
-
-	VkCommandBuffer commandBuffer;
-	vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
-
-	VkCommandBufferBeginInfo beginInfo{};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-	vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-	VkBufferCopy copyRegion{};
-	copyRegion.srcOffset = 0; // Optional
-	copyRegion.dstOffset = 0; // Optional
-	copyRegion.size = size;
-	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-
-	vkEndCommandBuffer(commandBuffer);
-
-	VkSubmitInfo submitInfo{};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffer;
-
-	vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(graphicsQueue);
-
-	vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
-}
-
-void createBuffer(
-	const VkDevice& device,
-	const VkPhysicalDevice& physDevice,
-	VkDeviceSize size,
-	VkBufferUsageFlags usage,
-	VkMemoryPropertyFlags properties,
-	VkBuffer& buffer,
-	VkDeviceMemory& bufferMemory
-)
-{
-	VkBufferCreateInfo bufferInfo{};
-	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = size;
-	bufferInfo.usage = usage;
-	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-	if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create buffer!");
-	}
-
-	VkMemoryRequirements memRequirements;
-	vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
-
-	VkMemoryAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = findMemoryType(physDevice, memRequirements.memoryTypeBits, properties);
-
-	if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate buffer memory!");
-	}
-
-	vkBindBufferMemory(device, buffer, bufferMemory, 0);
-}
-
 void Drawing::createVertexBuffer()
 {
 	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	createBuffer(
-		gpu.Device(),
-		gpu.PhysicalDevice(),
+	gpu.CreateBuffer(
 		bufferSize,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -108,9 +19,7 @@ void Drawing::createVertexBuffer()
 	memcpy(data, vertices.data(), (size_t)bufferSize);
 	vkUnmapMemory(gpu.Device(), stagingBufferMemory);
 
-	createBuffer(
-		gpu.Device(),
-		gpu.PhysicalDevice(),
+	gpu.CreateBuffer(
 		bufferSize,
 		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -118,7 +27,7 @@ void Drawing::createVertexBuffer()
 		vertexBufferMemory
 	);
 
-	copyBuffer(gpu.Device(), commandPool, gpu.GetQueues().graphics, stagingBuffer, vertexBuffer, bufferSize);
+	gpu.CopyBuffer(commandPool, stagingBuffer, vertexBuffer, bufferSize);
 
 	vkDestroyBuffer(gpu.Device(), stagingBuffer, nullptr);
 	vkFreeMemory(gpu.Device(), stagingBufferMemory, nullptr);
@@ -130,9 +39,7 @@ void Drawing::createIndexBuffer()
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-	createBuffer(
-		gpu.Device(),
-		gpu.PhysicalDevice(), 
+	gpu.CreateBuffer(
 		bufferSize, 
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
@@ -145,9 +52,7 @@ void Drawing::createIndexBuffer()
 	memcpy(data, indices.data(), (size_t)bufferSize);
 	vkUnmapMemory(gpu.Device(), stagingBufferMemory);
 
-	createBuffer(
-		gpu.Device(),
-		gpu.PhysicalDevice(), 
+	gpu.CreateBuffer(
 		bufferSize, 
 		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
@@ -155,7 +60,7 @@ void Drawing::createIndexBuffer()
 		indexBufferMemory
 	);
 
-	copyBuffer(gpu.Device(), commandPool, gpu.GetQueues().graphics, stagingBuffer, indexBuffer, bufferSize);
+	gpu.CopyBuffer(commandPool, stagingBuffer, indexBuffer, bufferSize);
 
 	vkDestroyBuffer(gpu.Device(), stagingBuffer, nullptr);
 	vkFreeMemory(gpu.Device(), stagingBufferMemory, nullptr);
@@ -259,7 +164,7 @@ void Drawing::DestroySyncObjects()
 	delete sync;
 }
 
-Drawing::~Drawing()
+void Drawing::Destroy()
 {
 	DestroySyncObjects();
 	DestroyCommandPool();
@@ -268,14 +173,39 @@ Drawing::~Drawing()
 	destroyIndexBuffer();
 }
 
+Drawing::~Drawing()
+{
+	Destroy();
+}
+
 void Drawing::Draw()
 {
+	static float deltaTime{ 0 };
+	static float lastTime{ 0 };
+	static float timer{ 0 };
+	static float currentTime{ 0 };
+	static unsigned int fps{ 0 };
+
+	timer += deltaTime;
+
+	if (timer >= 1)
+	{
+		fps = static_cast<unsigned int>(1.0f / deltaTime);
+		LogOut(fps);
+
+		timer = 0;
+	}
+
 	uint32_t imageIndex;
 
 	sync->PrepareFences();
 	sync->RetrieveAndSetNextImage(imageIndex);
 	sync->SubmitWork(commandBuffers[imageIndex]);
 	sync->Present(imageIndex);
+
+	currentTime = glfwGetTime();
+	deltaTime = currentTime - lastTime;
+	lastTime = currentTime;
 }
 
 void Drawing::WaitForIdle()

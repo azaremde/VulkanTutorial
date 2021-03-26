@@ -19,8 +19,8 @@ private:
 
 	VkPhysicalDevice physicalDevice { VK_NULL_HANDLE };
 	SwapChainSupport swapChainSupport{};
-	void PickPhysicalDevice();
 	bool IsBestDevice(const VkPhysicalDevice& physDevice);
+	void PickPhysicalDevice();
 
 	VkDevice device{ VK_NULL_HANDLE };
 	Queues queues;
@@ -34,8 +34,14 @@ private:
 	GPU& operator=(GPU&) = delete;
 
 public:
+	void CheckDeviceProperties();
+
 	GPU(VkInstance& _instance, Surface& _surface);
 	~GPU();
+
+	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+	void CopyBuffer(const VkCommandPool& commandPool, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
 	VkPhysicalDevice& PhysicalDevice();
 	VkDevice& Device();

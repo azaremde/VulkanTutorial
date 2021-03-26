@@ -4,6 +4,8 @@
 
 Vulkan::Vulkan(Window& _window) : window{ _window }
 {
+	window.AddOnWindowResizeSubscriber(this);
+
 	CreateInstance();
 	CreateDebugger();
 	CreateSurface();
@@ -139,6 +141,22 @@ void Vulkan::CreateDrawing()
 void Vulkan::DestroyDrawing()
 {
 	delete drawing;
+}
+
+void Vulkan::OnViewportResize(int newWidth, int newHeight)
+{
+	drawing->WaitForIdle();
+
+	gpu->CheckDeviceProperties();
+
+	swapChain->Destroy();
+	swapChain = new SwapChain(instance, *gpu, *surface, window);
+
+	pipeline->Destroy();
+	pipeline = new Pipeline(*gpu, *swapChain);
+
+	drawing->Destroy();
+	drawing = new Drawing(*gpu, pipeline->GetOutputFramebuffer(), *pipeline, *swapChain);
 }
 
 void Vulkan::Draw()

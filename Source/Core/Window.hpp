@@ -3,6 +3,11 @@
 
 #include "Pch.hpp"
 
+struct IOnViewportResize
+{
+	virtual void OnViewportResize(int newWidth, int newHeight) = 0;
+};
+
 class Window
 {
 private:
@@ -11,6 +16,11 @@ private:
 	unsigned int	width;
 	unsigned int	height;
 	std::string		title;
+
+	static void OnWindowResizeCallback_(GLFWwindow* window, int newWidth, int newHeight);
+	void OnWindowResizeCallback(int newWidth, int newHeight);
+
+	std::vector<IOnViewportResize*> onWindowResizeSubscribers;
 
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
@@ -24,6 +34,7 @@ public:
 
 	GLFWwindow* GetGlfwWindow();
 
+	void AddOnWindowResizeSubscriber(IOnViewportResize* subscriber);
 	void QueryFramebufferSize(int* width, int* height);
 };
 

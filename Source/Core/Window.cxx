@@ -5,9 +5,29 @@ Window::Window(const unsigned int _width, const unsigned int _height, const std:
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE,	GLFW_FALSE);
+	//glfwWindowHint(GLFW_RESIZABLE,	GLFW_FALSE);
 
 	window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+
+	glfwSetWindowUserPointer(window, this);
+	glfwSetFramebufferSizeCallback(window, OnWindowResizeCallback_);
+}
+
+void Window::OnWindowResizeCallback_(GLFWwindow* window, int newWidth, int newHeight)
+{
+	Window& win = *reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+	win.OnWindowResizeCallback(newWidth, newHeight);
+}
+
+void Window::OnWindowResizeCallback(int newWidth, int newHeight)
+{
+	width = newWidth;
+	height = newHeight;
+
+	for (const auto& sub : onWindowResizeSubscribers)
+	{
+		sub->OnViewportResize(newWidth, newHeight);
+	}
 }
 
 Window::~Window()
@@ -34,4 +54,9 @@ GLFWwindow* Window::GetGlfwWindow()
 void Window::QueryFramebufferSize(int* width, int* height)
 {
 	glfwGetFramebufferSize(window, width, height);
+}
+
+void Window::AddOnWindowResizeSubscriber(IOnViewportResize* subscriber)
+{
+	onWindowResizeSubscribers.emplace_back(subscriber);
 }

@@ -12,7 +12,7 @@
 #include "Pipeline/Pipeline.hpp"
 #include "Drawing/Drawing.hpp"
 
-class Vulkan
+class Vulkan : IOnViewportResize
 {
 private:
 	Window& window;
@@ -43,6 +43,8 @@ private:
 	Drawing* drawing;
 	void CreateDrawing();
 	void DestroyDrawing();
+
+	void OnViewportResize(int newWidth, int newHeight) override;
 
 	Vulkan(const Vulkan&) = delete;
 	Vulkan& operator=(const Vulkan&) = delete;

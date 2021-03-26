@@ -97,7 +97,7 @@ void SwapChain::CreateImageViews()
 	}
 }
 
-SwapChain::~SwapChain()
+void SwapChain::Destroy()
 {
 	for (const auto& imageView : swapChainImageViews)
 	{
@@ -105,6 +105,11 @@ SwapChain::~SwapChain()
 	}
 
 	vkDestroySwapchainKHR(gpu.Device(), swapChain, nullptr);
+}
+
+SwapChain::~SwapChain()
+{
+	Destroy();
 }
 
 const VkSwapchainKHR& SwapChain::GetSwapChain() const
@@ -146,6 +151,8 @@ namespace SwapChainUtil
 
 		return availableFormats[0];
 	}
+
+//#define FORCE_MAX_PERFORMANCE
 
 	VkPresentModeKHR ChoosePresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
 	{
