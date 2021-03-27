@@ -44,6 +44,8 @@ private:
 	Drawing(const Drawing&) = delete;
 	Drawing& operator=(const Drawing&) = delete;
 
+	void UpdateUniformBuffer(uint32_t imageIndex);
+
 	VkBuffer vertexBuffer;
 	VkDeviceMemory vertexBufferMemory;
 	VkBuffer indexBuffer;

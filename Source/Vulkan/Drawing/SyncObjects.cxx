@@ -44,10 +44,13 @@ void SyncObjects::PrepareFences()
 	vkResetFences(gpu.Device(), 1, &inFlightFences[currentFrame]);
 }
 
-void SyncObjects::RetrieveAndSetNextImage(uint32_t& imageIndex)
+void SyncObjects::AcquireImage(uint32_t& imageIndex)
 {
 	vkAcquireNextImageKHR(gpu.Device(), swapChain.GetSwapChain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+}
 
+void SyncObjects::RetrieveAndSetNextImage(uint32_t& imageIndex)
+{
 	// Check if a previous frame is using this image (i.e. there is its fence to wait on)
 	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
 		vkWaitForFences(gpu.Device(), 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
