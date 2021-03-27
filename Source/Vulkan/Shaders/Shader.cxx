@@ -7,10 +7,38 @@ Shader::Shader(GPU& _gpu, const std::string& vertShaderPath, const std::string& 
 
     vertShaderModule = ShaderUtil::CreateShaderModule(gpu.Device(), vertShaderCode);
     fragShaderModule = ShaderUtil::CreateShaderModule(gpu.Device(), fragShaderCode);
+
+    CreateDescriptorSetLayout();
+}
+
+void Shader::CreateDescriptorSetLayout()
+{
+    uboLayoutBinding.binding = 0;
+    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uboLayoutBinding.descriptorCount = 1;
+    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    uboLayoutBinding.pImmutableSamplers = nullptr;
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = 1;
+    layoutInfo.pBindings = &uboLayoutBinding;
+
+    VulkanCheck(
+        vkCreateDescriptorSetLayout(gpu.Device(), &layoutInfo, nullptr, &descriptorSetLayout),
+        "Failed to create descriptor set layout."
+    );
+}
+
+const VkDescriptorSetLayout& Shader::GetDescriptorSetLayout() const
+{
+    return descriptorSetLayout;
 }
 
 Shader::~Shader()
 {
+    vkDestroyDescriptorSetLayout(gpu.Device(), descriptorSetLayout, nullptr);
+
     vkDestroyShaderModule(gpu.Device(), vertShaderModule, nullptr);
     vkDestroyShaderModule(gpu.Device(), fragShaderModule, nullptr);
 }

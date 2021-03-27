@@ -30,6 +30,7 @@ public:
 	~SyncObjects();
 
 	void PrepareFences();
+	void AcquireImage(uint32_t& imageIndex);
 	void RetrieveAndSetNextImage(uint32_t& imageIndex);
 	void SubmitWork(const VkCommandBuffer& buffer);
 	void Present(uint32_t& imageIndex);

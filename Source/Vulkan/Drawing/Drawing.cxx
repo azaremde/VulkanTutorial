@@ -13,7 +13,7 @@ void Drawing::createVertexBuffer()
 		stagingBuffer,
 		stagingBufferMemory
 	);
-
+	
 	void* data;
 	vkMapMemory(gpu.Device(), stagingBufferMemory, 0, bufferSize, 0, &data);
 	memcpy(data, vertices.data(), (size_t)bufferSize);
@@ -143,6 +143,8 @@ void Drawing::CreateCommandBuffers()
 			vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 			vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
+			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.__GetPipelineLayout(), 0, 1, &pipeline.__GetDescriptorSets()[i], 0, nullptr);
+
 			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
 		pipeline.EndRenderPass(commandBuffers[i]);
@@ -178,6 +180,31 @@ Drawing::~Drawing()
 	Destroy();
 }
 
+void Drawing::UpdateUniformBuffer(uint32_t imageIndex)
+{
+	static float timer{0};
+
+	timer += 1;
+
+	UniformBufferObject ubo{};
+
+	ubo.model = glm::mat4x4(1);
+	ubo.model = glm::rotate(ubo.model, glm::radians(timer), glm::vec3(0, 0, 1));
+	ubo.model = glm::translate(ubo.model, glm::vec3(0, 0, -5));
+
+	ubo.view = glm::mat4x4(1);
+
+	ubo.proj = glm::mat4x4(1);
+	ubo.proj = glm::perspective(
+		glm::radians(70.0f), 
+		static_cast<float>(swapChain.GetSwapChainExtent().width) / static_cast<float>(swapChain.GetSwapChainExtent().height), 
+		0.1f, 
+		1000.0f
+	);
+
+	pipeline.UpdateUniformBuffer(imageIndex, ubo);
+}
+
 void Drawing::Draw()
 {
 	static float deltaTime{ 0 };
@@ -199,7 +226,14 @@ void Drawing::Draw()
 	uint32_t imageIndex;
 
 	sync->PrepareFences();
+
+	sync->AcquireImage(imageIndex);
+
+	UpdateUniformBuffer(imageIndex);
+
 	sync->RetrieveAndSetNextImage(imageIndex);
+
+
 	sync->SubmitWork(commandBuffers[imageIndex]);
 	sync->Present(imageIndex);
 

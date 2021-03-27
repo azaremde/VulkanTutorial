@@ -28,6 +28,9 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #define LogOut(x) std::cout << x << '\n'
 #define ErrOut(x) std::cerr << x << '\n'
 
