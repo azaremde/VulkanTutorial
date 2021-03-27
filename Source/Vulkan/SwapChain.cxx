@@ -152,7 +152,7 @@ namespace SwapChainUtil
 		return availableFormats[0];
 	}
 
-// #define FORCE_MAX_PERFORMANCE
+//#define FORCE_MAX_PERFORMANCE
 
 	VkPresentModeKHR ChoosePresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
 	{

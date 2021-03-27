@@ -7,13 +7,6 @@
 
 #include "Vulkan/GPU/GPU.hpp"
 
-struct UniformBufferObject
-{
-	glm::mat4x4 model;
-	glm::mat4x4 view;
-	glm::mat4x4 proj;
-};
-
 class Shader
 {
 private:
@@ -25,18 +18,12 @@ private:
 	VkShaderModule vertShaderModule;
 	VkShaderModule fragShaderModule;
 
-	VkDescriptorSetLayout descriptorSetLayout;
-	VkDescriptorSetLayoutBinding uboLayoutBinding{};
-	void CreateDescriptorSetLayout();
-
 public:
 	Shader(GPU& _gpu, const std::string& vertShaderPath, const std::string& fragShaderPath);
 	~Shader();
 
 	VkShaderModule& GetVertexShaderModule();
 	VkShaderModule& GetFragmentShaderModule();
-
-	const VkDescriptorSetLayout& GetDescriptorSetLayout() const;
 
 	void RetrieveCreateInfoStruct(std::vector<VkPipelineShaderStageCreateInfo>& result);
 };

@@ -56,6 +56,7 @@ private:
 	RenderPass* renderPass;
 
 	GPU& gpu;
+
 	SwapChain& swapChain;
 
 	// Temp
@@ -63,18 +64,6 @@ private:
 
 	// Temp
 	Framebuffer* outputFramebuffer;
-
-	std::vector<VkBuffer> uniformBuffers;
-	std::vector<VkDeviceMemory> uniformBuffersMemory;
-	void CreateUniformBuffers();
-	void DestroyUniformBuffers();
-
-	VkDescriptorPool descriptorPool;
-	void CreateDescriptorPool();
-	void DestroyDescriptorPool();
-
-	std::vector<VkDescriptorSet> descriptorSets;
-	void CreateDescriptorSets();
 
 	Pipeline(const Pipeline&) = delete;
 	Pipeline& operator=(const Pipeline&) = delete;
@@ -85,20 +74,8 @@ public:
 	Pipeline(GPU& _gpu, SwapChain& _swapChain);
 	~Pipeline();
 
-	void UpdateUniformBuffer(uint32_t currentImage, const UniformBufferObject& ubo);
-
 	void BeginRenderPass(const VkCommandBuffer& commandBuffer, const VkFramebuffer& framebuffer) const;
 	void EndRenderPass(const VkCommandBuffer& commandBuffer) const;
-
-	const VkPipelineLayout& __GetPipelineLayout() const
-	{
-		return pipelineLayout;
-	}
-
-	const std::vector<VkDescriptorSet>& __GetDescriptorSets() const
-	{
-		return descriptorSets;
-	}
 
 	const RenderPass& GetRenderPass() const;
 	const VkPipeline& GetPipeline() const;

@@ -47,4 +47,3 @@ if(WIN32)
 endif(WIN32)
 
 file(COPY Shaders DESTINATION ${CMAKE_BINARY_DIR})
-file(COPY Shaders DESTINATION ${CMAKE_BINARY_DIR}/Debug)

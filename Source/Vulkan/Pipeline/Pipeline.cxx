@@ -25,8 +25,8 @@ Pipeline::Pipeline(GPU& _gpu, SwapChain& _swapChain) : gpu{ _gpu }, swapChain{ _
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(swapChain.GetSwapChainExtent().width);
-	viewport.height = static_cast<float>(swapChain.GetSwapChainExtent().height);
+	viewport.width = (float)swapChain.GetSwapChainExtent().width;
+	viewport.height = (float)swapChain.GetSwapChainExtent().height;
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
@@ -96,8 +96,8 @@ Pipeline::Pipeline(GPU& _gpu, SwapChain& _swapChain) : gpu{ _gpu }, swapChain{ _
 	
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 1; // Optional
-	pipelineLayoutInfo.pSetLayouts = &shader->GetDescriptorSetLayout(); // Optional
+	pipelineLayoutInfo.setLayoutCount = 0; // Optional
+	pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
 	pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
 	pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
@@ -137,137 +137,13 @@ Pipeline::Pipeline(GPU& _gpu, SwapChain& _swapChain) : gpu{ _gpu }, swapChain{ _
 
 	outputFramebuffer = new Framebuffer(gpu, swapChain, *renderPass);
 
-	CreateUniformBuffers();
-	CreateDescriptorPool();
-	CreateDescriptorSets();
+	//createVertexBuffer();
 
 	DebugLogOut("Pipeline created.");
 }
 
-void Pipeline::CreateUniformBuffers()
-{	
-    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-
-    uniformBuffers.resize(swapChain.GetSwapChainImages().size());
-    uniformBuffersMemory.resize(swapChain.GetSwapChainImages().size());
-
-    for (size_t i = 0; i < swapChain.GetSwapChainImages().size(); i++) {
-		gpu.CreateBuffer(
-			bufferSize, 
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-			uniformBuffers[i], 
-			uniformBuffersMemory[i]
-		);
-    }
-}
-
-void Pipeline::DestroyUniformBuffers()
-{
-	for (size_t i = 0; i < uniformBuffers.size(); i++)
-	{
-		vkDestroyBuffer(gpu.Device(), uniformBuffers[i], nullptr);
-		vkFreeMemory(gpu.Device(), uniformBuffersMemory[i], nullptr);
-	}
-}
-
-void Pipeline::CreateDescriptorPool()
-{
-	VkDescriptorPoolSize poolSize{};
-	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSize.descriptorCount = static_cast<uint32_t>(swapChain.GetSwapChainImages().size());
-
-	VkDescriptorPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.poolSizeCount = 1;
-	poolInfo.pPoolSizes = &poolSize;
-	poolInfo.maxSets = static_cast<uint32_t>(swapChain.GetSwapChainImages().size());
-
-	VulkanCheck(
-		vkCreateDescriptorPool(gpu.Device(), &poolInfo, nullptr, &descriptorPool),
-		"Failed to create descriptor pool."
-	);
-}
-
-void Pipeline::DestroyDescriptorPool()
-{
-	vkDestroyDescriptorPool(gpu.Device(), descriptorPool, nullptr);
-}
-
-void Pipeline::CreateDescriptorSets()
-{
-	std::vector<VkDescriptorSetLayout> layouts(swapChain.GetSwapChainImages().size(), shader->GetDescriptorSetLayout());
-	VkDescriptorSetAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = descriptorPool;
-	allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChain.GetSwapChainImages().size());
-	allocInfo.pSetLayouts = layouts.data();
-
-	descriptorSets.resize(swapChain.GetSwapChainImages().size());
-
-	VulkanCheck(
-		vkAllocateDescriptorSets(gpu.Device(), &allocInfo, descriptorSets.data()),
-		"Failed to allocate descriptor sets."
-	);
-
-	for (size_t i = 0; i < swapChain.GetSwapChainImages().size(); i++) {
-		VkDescriptorBufferInfo bufferInfo{};
-		bufferInfo.buffer = uniformBuffers[i];
-		bufferInfo.offset = 0;
-		bufferInfo.range = sizeof(UniformBufferObject);
-
-		VkWriteDescriptorSet descriptorWrite{};
-		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrite.dstSet = descriptorSets[i];
-		descriptorWrite.dstBinding = 0;
-		descriptorWrite.dstArrayElement = 0;
-		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		descriptorWrite.descriptorCount = 1;
-
-		descriptorWrite.pBufferInfo = &bufferInfo;
-		descriptorWrite.pImageInfo = nullptr; // Optional
-		descriptorWrite.pTexelBufferView = nullptr; // Optional
-
-		vkUpdateDescriptorSets(gpu.Device(), 1, &descriptorWrite, 0, nullptr);
-	}
-}
-
-void Pipeline::BeginRenderPass(const VkCommandBuffer& commandBuffer, const VkFramebuffer& framebuffer) const
-{
-	VkRenderPassBeginInfo renderPassInfo{};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = renderPass->GetRenderPass();
-	renderPassInfo.framebuffer = framebuffer;
-
-	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = swapChain.GetSwapChainExtent();
-
-	VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-	renderPassInfo.clearValueCount = 1;
-	renderPassInfo.pClearValues = &clearColor;
-
-	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-}
-
-void Pipeline::EndRenderPass(const VkCommandBuffer& commandBuffer) const
-{
-	vkCmdEndRenderPass(commandBuffer);
-}
-
-void Pipeline::UpdateUniformBuffer(uint32_t currentImage, const UniformBufferObject& ubo)
-{	
-	void* data;
-	vkMapMemory(gpu.Device(), uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
-		memcpy(data, &ubo, sizeof(ubo));
-	vkUnmapMemory(gpu.Device(), uniformBuffersMemory[currentImage]);
-}
-
 void Pipeline::Destroy()
 {
-	DestroyDescriptorPool();
-
-	DestroyUniformBuffers();
-
 	delete outputFramebuffer;
 
 	vkDestroyPipeline(gpu.Device(), pipeline, nullptr);
@@ -299,4 +175,26 @@ const VkPipeline& Pipeline::GetPipeline() const
 Framebuffer& Pipeline::GetOutputFramebuffer()
 {
 	return *outputFramebuffer;
+}
+
+void Pipeline::BeginRenderPass(const VkCommandBuffer& commandBuffer, const VkFramebuffer& framebuffer) const
+{
+	VkRenderPassBeginInfo renderPassInfo{};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassInfo.renderPass = renderPass->GetRenderPass();
+	renderPassInfo.framebuffer = framebuffer;
+
+	renderPassInfo.renderArea.offset = { 0, 0 };
+	renderPassInfo.renderArea.extent = swapChain.GetSwapChainExtent();
+
+	VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+	renderPassInfo.clearValueCount = 1;
+	renderPassInfo.pClearValues = &clearColor;
+
+	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void Pipeline::EndRenderPass(const VkCommandBuffer& commandBuffer) const
+{
+	vkCmdEndRenderPass(commandBuffer);
 }
