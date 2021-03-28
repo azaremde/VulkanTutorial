@@ -1,7 +1,14 @@
 #include "AstrumVK.hpp"
 
+#include "Debug.hpp"
+
 void AstrumVK::createInstance()
 {
+    if (Debug::validationLayersEnabled && !Debug::checkValidationLayerSupport())
+    {
+        throw std::runtime_error("Validation layers required but not supported.");
+    }
+
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = window.getTitle().c_str();
@@ -14,14 +21,26 @@ void AstrumVK::createInstance()
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
     
-    uint32_t glfwExtensionCount = 0;
-    const char** glfwExtensions;
-    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+    auto glfwExtensions = Debug::getRequiredExtensions();
     
-    createInfo.enabledExtensionCount = glfwExtensionCount;
-    createInfo.ppEnabledExtensionNames = glfwExtensions;
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(glfwExtensions.size());
+    createInfo.ppEnabledExtensionNames = glfwExtensions.data();
 
     createInfo.enabledLayerCount = 0;
+
+    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+    if (Debug::validationLayersEnabled)
+    {
+        Debug::populateCreateInfoStruct(debugCreateInfo);
+
+        createInfo.enabledLayerCount = static_cast<uint32_t>(Debug::validationLayers.size());
+        createInfo.ppEnabledLayerNames = Debug::validationLayers.data();
+        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+    }
+    else
+    {
+        createInfo.enabledLayerCount = 0;
+    }
 
     VK_CHECK(
         vkCreateInstance(&createInfo, nullptr, &instance),
@@ -29,10 +48,14 @@ void AstrumVK::createInstance()
     );
 
     DebugLogOut("Instance created.");
+
+    Debug::createMessenger(instance);
 }
 
 void AstrumVK::destroyInstance()
 {
+    Debug::destroyMessenger(instance);
+
     vkDestroyInstance(instance, nullptr);
     
     DebugLogOut("Instance destroyed.");
