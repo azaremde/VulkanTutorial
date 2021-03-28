@@ -48,3 +48,8 @@ std::string Window::getTitle() const
 {
     return title;
 }
+
+GLFWwindow* Window::getGlfwWindow()
+{
+    return pGlfwWindow;
+}

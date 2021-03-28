@@ -48,25 +48,57 @@ void AstrumVK::createInstance()
     );
 
     DebugLogOut("Instance created.");
-
-    Debug::createMessenger(instance);
 }
 
 void AstrumVK::destroyInstance()
 {
-    Debug::destroyMessenger(instance);
-
     vkDestroyInstance(instance, nullptr);
     
     DebugLogOut("Instance destroyed.");
 }
 
+void AstrumVK::createDebugger()
+{
+    Debug::createMessenger(instance);
+}
+
+void AstrumVK::destroyDebugger()
+{
+    Debug::destroyMessenger(instance);
+}
+
+void AstrumVK::createSurface()
+{
+    surface = new Surface(instance, window);
+}
+
+void AstrumVK::destroySurface()
+{
+    delete surface;
+}
+
+void AstrumVK::createGPU()
+{
+    gpu = new GPU(instance, *surface);
+}
+
+void AstrumVK::destroyGPU()
+{
+    delete gpu;
+}
+
 AstrumVK::AstrumVK(Window& _window) : window { _window }
 {
     createInstance();
+    createDebugger();
+    createSurface();
+    createGPU();
 }
 
 AstrumVK::~AstrumVK()
 {
+    destroyGPU();
+    destroySurface();
+    destroyDebugger();
     destroyInstance();
 }

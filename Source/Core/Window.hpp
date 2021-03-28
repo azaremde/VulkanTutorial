@@ -28,6 +28,7 @@ public:
     unsigned int    getWidth() const;
     unsigned int    getHeight() const;
     std::string     getTitle() const;
+    GLFWwindow*     getGlfwWindow();
 };
 
 #endif

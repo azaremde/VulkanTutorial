@@ -5,12 +5,26 @@
 
 #include "Core/Window.hpp"
 
+#include "GPU/GPU.hpp"
+#include "Surface/Surface.hpp"
+
 class AstrumVK
 {
 private:
     VkInstance instance;
     void createInstance();
     void destroyInstance();
+
+    void createDebugger();
+    void destroyDebugger();
+
+    Surface* surface;
+    void createSurface();
+    void destroySurface();
+
+    GPU* gpu;
+    void createGPU();
+    void destroyGPU();
 
     Window& window;
 

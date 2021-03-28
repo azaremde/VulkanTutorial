@@ -3,7 +3,7 @@
 int main()
 {
 	App app;
-
+	
 	try 
 	{
 		app.run();

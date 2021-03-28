@@ -3,13 +3,19 @@
 
 #pragma once
 
+#define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
 
+#include <iostream>
 #include <optional>
 #include <string>
 #include <vector>
-#include <iostream>
+#include <set>
+
+#define FORCE_DEBUG_MESSAGES
 
 #ifdef NDEBUG
     #define RELEASE_CONFIG
@@ -20,7 +26,7 @@
 #define LogOut(x) std::cout << x << '\n'
 #define ErrOut(x) std::cerr << x << '\n'
 
-#ifdef DEBUG_CONFIG
+#if defined(DEBUG_CONFIG) || defined(FORCE_DEBUG_MESSAGES)
     #define DebugLogOut(x) std::cout << x << '\n'
 #else
     #define DebugLogOut(x) ((void*)0)
