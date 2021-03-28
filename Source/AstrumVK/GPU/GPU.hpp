@@ -6,6 +6,7 @@
 #include "Pch.hpp"
 
 #include "QueueFamilyIndices.hpp"
+#include "SwapChainSupportDetails.hpp"
 
 #include "AstrumVK/Surface/Surface.hpp"
 
@@ -26,12 +27,20 @@ private:
     } queues;
 
     void retrieveQueues();
+
+    SwapChainSupportDetails swapChainSupport;
     
-    bool isDeviceSuitable(VkPhysicalDevice physicalDevice);
+    bool isDeviceSuitable(const VkPhysicalDevice& physicalDevice);
 
     VkInstance& instance;
 
     Surface& surface;
+
+    inline static const std::vector<const char*> deviceExtensions = {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    };
+
+    static bool checkDeviceExtensionsSupport(const VkPhysicalDevice& physicalDevice);
 
     GPU(const GPU&) = delete;
     GPU& operator=(const GPU&) = delete;
@@ -42,6 +51,8 @@ public:
 
     const VkPhysicalDevice& getPhysicalDevice() const;
     const VkDevice& getDevice() const;
+    const QueueFamilyIndices& getQueueFamilyIndices() const;
+    const SwapChainSupportDetails& getSwapChainSupportDetails() const;
 };
 
 #endif

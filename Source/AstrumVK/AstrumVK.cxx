@@ -87,16 +87,28 @@ void AstrumVK::destroyGPU()
     delete gpu;
 }
 
+void AstrumVK::createSwapChain()
+{
+    swapChain = new SwapChain(*gpu, *surface, window);
+}
+
+void AstrumVK::destroySwapChain()
+{
+    delete swapChain;
+}
+
 AstrumVK::AstrumVK(Window& _window) : window { _window }
 {
     createInstance();
     createDebugger();
     createSurface();
     createGPU();
+    createSwapChain();
 }
 
 AstrumVK::~AstrumVK()
 {
+    destroySwapChain();
     destroyGPU();
     destroySurface();
     destroyDebugger();

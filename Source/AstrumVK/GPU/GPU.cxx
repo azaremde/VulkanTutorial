@@ -59,6 +59,9 @@ void GPU::createLogicalDevice()
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pEnabledFeatures = &deviceFeatures;
 
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+
     if (Debug::validationLayersEnabled)
     {
         createInfo.enabledLayerCount = static_cast<uint32_t>(Debug::validationLayers.size());
@@ -102,10 +105,34 @@ GPU::~GPU()
     DebugLogOut("Logical device has been destroyed.");
 }
 
-bool GPU::isDeviceSuitable(VkPhysicalDevice physDevice) {
+bool GPU::isDeviceSuitable(const VkPhysicalDevice& physDevice) {
     queues.familyIndices = QueueFamilyIndices::of(physDevice, surface.getSurface());
 
-    return queues.familyIndices.isComplete();
+    bool extensionsSupported = checkDeviceExtensionsSupport(physDevice);
+
+    if (extensionsSupported)
+    {
+        swapChainSupport = SwapChainSupportDetails::of(physDevice, surface.getSurface());
+    }
+
+    return queues.familyIndices.isComplete() && swapChainSupport.isSupported() && extensionsSupported /* redundant */;
+}
+
+bool GPU::checkDeviceExtensionsSupport(const VkPhysicalDevice& device)
+{
+    uint32_t extensionCount;
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+    std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+    for (const auto& extension : availableExtensions) {
+        requiredExtensions.erase(extension.extensionName);
+    }
+
+    return requiredExtensions.empty();
 }
 
 const VkPhysicalDevice& GPU::getPhysicalDevice() const
@@ -116,4 +143,14 @@ const VkPhysicalDevice& GPU::getPhysicalDevice() const
 const VkDevice& GPU::getDevice() const
 {
     return device;
+}
+
+const QueueFamilyIndices& GPU::getQueueFamilyIndices() const
+{
+    return queues.familyIndices;
+}
+
+const SwapChainSupportDetails& GPU::getSwapChainSupportDetails() const
+{
+    return swapChainSupport;
 }

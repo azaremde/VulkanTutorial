@@ -7,6 +7,7 @@
 
 #include "GPU/GPU.hpp"
 #include "Surface/Surface.hpp"
+#include "SwapChain/SwapChain.hpp"
 
 class AstrumVK
 {
@@ -25,6 +26,10 @@ private:
     GPU* gpu;
     void createGPU();
     void destroyGPU();
+
+    SwapChain* swapChain;
+    void createSwapChain();
+    void destroySwapChain();
 
     Window& window;
 
