@@ -8,6 +8,8 @@
 #include "GPU/GPU.hpp"
 #include "Surface/Surface.hpp"
 #include "SwapChain/SwapChain.hpp"
+#include "Pipeline/Pipeline.hpp"
+#include "Pipeline/Shaders/Shader.hpp"
 
 class AstrumVK
 {
@@ -30,6 +32,11 @@ private:
     SwapChain* swapChain;
     void createSwapChain();
     void destroySwapChain();
+
+    Shader* defaultShader;
+    Pipeline* pipeline;
+    void createPipeline();
+    void destroyPipeline();
 
     Window& window;
 

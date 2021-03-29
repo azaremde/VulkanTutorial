@@ -163,3 +163,13 @@ SwapChain::~SwapChain()
 
     DebugLogOut("Swap chain destroyed.");
 }
+
+const VkSurfaceFormatKHR& SwapChain::getSurfaceFormat() const
+{
+    return surfaceFormat;
+}
+
+const VkExtent2D& SwapChain::getExtent() const
+{
+    return extent;
+}

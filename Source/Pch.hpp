@@ -13,6 +13,8 @@
 
 #include <iostream>
 #include <optional>
+#include <fstream>
+#include <cassert>
 #include <string>
 #include <vector>
 #include <set>

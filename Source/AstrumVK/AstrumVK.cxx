@@ -97,6 +97,20 @@ void AstrumVK::destroySwapChain()
     delete swapChain;
 }
 
+void AstrumVK::createPipeline()
+{
+    defaultShader = new Shader(*gpu, "Shaders/DefaultShader.vert.spv", "Shaders/DefaultShader.frag.spv");
+
+    pipeline = new Pipeline(*gpu, *swapChain, *defaultShader);
+}
+
+void AstrumVK::destroyPipeline()
+{
+    delete pipeline;
+
+    delete defaultShader;
+}
+
 AstrumVK::AstrumVK(Window& _window) : window { _window }
 {
     createInstance();
@@ -104,10 +118,12 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
     createSurface();
     createGPU();
     createSwapChain();
+    createPipeline();
 }
 
 AstrumVK::~AstrumVK()
 {
+    destroyPipeline();
     destroySwapChain();
     destroyGPU();
     destroySurface();
