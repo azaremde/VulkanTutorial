@@ -13,8 +13,13 @@ class SwapChain
 {
 private:
     VkSwapchainKHR swapChain;
+    void createSwapChain();
+    void destroySwapChain();
 
     std::vector<VkImage> images;
+    std::vector<VkImageView> imageViews;
+    void createImageViews();
+    void destroyImageViews();
 
     VkSurfaceFormatKHR surfaceFormat;
     void chooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);

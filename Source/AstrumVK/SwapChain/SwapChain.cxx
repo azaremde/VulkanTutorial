@@ -48,7 +48,7 @@ void SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities)
     }
 }
 
-SwapChain::SwapChain(GPU &_gpu, Surface &_surface, Window &_window) : gpu{_gpu}, surface{_surface}, window{_window}
+void SwapChain::createSwapChain()
 {
     SwapChainSupportDetails swapChainSupport = gpu.getSwapChainSupportDetails();
     chooseSurfaceFormat(swapChainSupport.formats);
@@ -72,16 +72,19 @@ SwapChain::SwapChain(GPU &_gpu, Surface &_surface, Window &_window) : gpu{_gpu},
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    QueueFamilyIndices indices = gpu.getQueueFamilyIndices();    
+    QueueFamilyIndices indices = gpu.getQueueFamilyIndices();
     uint32_t queueFamilyIndices[] = {indices.graphics.value(), indices.present.value()};
 
-    if (indices.graphics != indices.present) {
+    if (indices.graphics != indices.present)
+    {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         createInfo.queueFamilyIndexCount = 2;
         createInfo.pQueueFamilyIndices = queueFamilyIndices;
-    } else {
+    }
+    else
+    {
         createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        createInfo.queueFamilyIndexCount = 0; // Optional
+        createInfo.queueFamilyIndexCount = 0;     // Optional
         createInfo.pQueueFamilyIndices = nullptr; // Optional
     }
 
@@ -93,8 +96,7 @@ SwapChain::SwapChain(GPU &_gpu, Surface &_surface, Window &_window) : gpu{_gpu},
 
     VK_CHECK(
         vkCreateSwapchainKHR(gpu.getDevice(), &createInfo, nullptr, &swapChain),
-        "Failed to create swap chain."
-    );
+        "Failed to create swap chain.");
 
     vkGetSwapchainImagesKHR(gpu.getDevice(), swapChain, &imageCount, nullptr);
     images.resize(imageCount);
@@ -103,9 +105,61 @@ SwapChain::SwapChain(GPU &_gpu, Surface &_surface, Window &_window) : gpu{_gpu},
     DebugLogOut("Swap chain successfully created.");
 }
 
-SwapChain::~SwapChain()
+void SwapChain::destroySwapChain()
 {
     vkDestroySwapchainKHR(gpu.getDevice(), swapChain, nullptr);
+}
+
+void SwapChain::createImageViews()
+{
+    imageViews.resize(images.size());
+
+    for (size_t i = 0; i < images.size(); i++)
+    {
+        VkImageViewCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        createInfo.image = images[i];
+        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        createInfo.format = surfaceFormat.format;
+        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        createInfo.subresourceRange.baseMipLevel = 0;
+        createInfo.subresourceRange.levelCount = 1;
+        createInfo.subresourceRange.baseArrayLayer = 0;
+        createInfo.subresourceRange.layerCount = 1;
+
+        VK_CHECK(
+            vkCreateImageView(gpu.getDevice(), &createInfo, nullptr, &imageViews[i]),
+            "Failed to create image view."
+        );
+
+        DebugLogOut("Image view created.");
+    }
+}
+
+void SwapChain::destroyImageViews()
+{
+    for (const auto& imageView : imageViews)
+    {
+        vkDestroyImageView(gpu.getDevice(), imageView, nullptr);
+
+        DebugLogOut("Image view destroyed.");
+    }
+}
+
+SwapChain::SwapChain(GPU &_gpu, Surface &_surface, Window &_window) : gpu{_gpu}, surface{_surface}, window{_window}
+{
+    createSwapChain();
+    createImageViews();
+}
+
+SwapChain::~SwapChain()
+{
+    destroyImageViews();
+    destroySwapChain();
 
     DebugLogOut("Swap chain destroyed.");
 }
