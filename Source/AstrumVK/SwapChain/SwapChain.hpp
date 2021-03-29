@@ -34,6 +34,12 @@ private:
     VkExtent2D extent;
     void chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
+    VkSemaphore imageAvailableSemaphore;
+    VkSemaphore renderFinishedSemaphore;
+    std::vector<VkSemaphore> signalSemaphores;
+
+    uint32_t imageIndex;
+
     GPU& gpu;
     Surface& surface;
     Window& window;
@@ -45,6 +51,14 @@ public:
     const std::vector<Framebuffer*>& getFramebuffers() const;
     void createFramebuffers(const VkRenderPass& renderPass);
     void destroyFramebuffers();
+
+    void createSemaphores();
+    void destroySemaphores();
+
+    uint32_t getImageIndex() const;
+    void acquireImage();
+    void submit(const std::vector<VkCommandBuffer>& commandBuffers);
+    void present();
     
     const VkSurfaceFormatKHR& getSurfaceFormat() const;
     const VkExtent2D& getExtent() const;

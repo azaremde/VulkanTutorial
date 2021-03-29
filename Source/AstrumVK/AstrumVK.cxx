@@ -144,10 +144,15 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
     createCommandBuffer();
 
     commandBuffer->begin(pipeline->getRenderPass(), swapChain->getFramebuffers(), swapChain->getExtent(), pipeline->getPipeline());
+
+    // Todo: Try making it in the createSwapChain() function.
+    swapChain->createSemaphores();
 }
 
 AstrumVK::~AstrumVK()
 {
+    swapChain->destroySemaphores();
+
     destroyCommandBuffer();
     destroySwapChainFramebuffers();
     destroyPipeline();
@@ -156,4 +161,11 @@ AstrumVK::~AstrumVK()
     destroySurface();
     destroyDebugger();
     destroyInstance();
+}
+
+void AstrumVK::drawFrame()
+{
+    swapChain->acquireImage();
+    swapChain->submit(commandBuffer->getCommandBuffers());
+    swapChain->present();
 }

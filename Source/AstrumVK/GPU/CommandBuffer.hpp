@@ -29,6 +29,8 @@ public:
     void begin(const VkRenderPass& renderPass, const std::vector<Framebuffer*>& swapChainFramebuffers, const VkExtent2D& extent, const VkPipeline& graphicsPipeline);
     void end(const VkCommandBuffer& buffer);
 
+    const std::vector<VkCommandBuffer>& getCommandBuffers() const;
+
     CommandBuffer(GPU& _gpu, SwapChain& _swapChain);
     ~CommandBuffer();
 };

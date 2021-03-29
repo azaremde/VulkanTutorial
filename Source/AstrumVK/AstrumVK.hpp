@@ -53,6 +53,8 @@ private:
     AstrumVK& operator=(const AstrumVK&) = delete;
 
 public:
+    void drawFrame();
+
     AstrumVK(Window& _window);
     ~AstrumVK();
 };

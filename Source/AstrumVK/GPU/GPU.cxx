@@ -135,6 +135,16 @@ bool GPU::checkDeviceExtensionsSupport(const VkPhysicalDevice& device)
     return requiredExtensions.empty();
 }
 
+const VkQueue& GPU::getGraphicsQueue() const
+{
+    return queues.graphics;
+}
+
+const VkQueue& GPU::getPresentQueue() const
+{
+    return queues.present;
+}
+
 const VkPhysicalDevice& GPU::getPhysicalDevice() const
 {
     return physicalDevice;

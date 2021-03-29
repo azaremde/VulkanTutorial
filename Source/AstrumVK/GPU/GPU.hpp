@@ -49,6 +49,9 @@ public:
     GPU(VkInstance& _instance, Surface& _surface);
     ~GPU();
 
+    const VkQueue& getGraphicsQueue() const;
+    const VkQueue& getPresentQueue() const;
+
     const VkPhysicalDevice& getPhysicalDevice() const;
     const VkDevice& getDevice() const;
     const QueueFamilyIndices& getQueueFamilyIndices() const;

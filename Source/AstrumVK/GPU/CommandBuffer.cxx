@@ -97,3 +97,8 @@ CommandBuffer::~CommandBuffer()
 {
     destroyCommandPool();
 }
+
+const std::vector<VkCommandBuffer>& CommandBuffer::getCommandBuffers() const
+{
+    return commandBuffers;
+}
