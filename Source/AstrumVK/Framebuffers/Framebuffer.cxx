@@ -24,3 +24,8 @@ Framebuffer::~Framebuffer()
     vkDestroyFramebuffer(gpu.getDevice(), framebuffer, nullptr);
     DebugLogOut("Framebuffer destroyed.");
 }
+
+const VkFramebuffer& Framebuffer::getFramebuffer() const
+{
+    return framebuffer;
+}

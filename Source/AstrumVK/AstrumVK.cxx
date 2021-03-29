@@ -2,6 +2,7 @@
 
 #include "Debug.hpp"
 
+// Todo: move to its own class.
 void AstrumVK::createInstance()
 {
     if (Debug::validationLayersEnabled && !Debug::checkValidationLayerSupport())
@@ -121,6 +122,16 @@ void AstrumVK::destroySwapChainFramebuffers()
     swapChain->destroyFramebuffers();
 }
 
+void AstrumVK::createCommandBuffer()
+{
+    commandBuffer = new CommandBuffer(*gpu, *swapChain);
+}
+
+void AstrumVK::destroyCommandBuffer()
+{
+    delete commandBuffer;
+}
+
 AstrumVK::AstrumVK(Window& _window) : window { _window }
 {
     createInstance();
@@ -130,10 +141,14 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
     createSwapChain();
     createPipeline();
     createSwapChainFramebuffers();
+    createCommandBuffer();
+
+    commandBuffer->begin(pipeline->getRenderPass(), swapChain->getFramebuffers(), swapChain->getExtent(), pipeline->getPipeline());
 }
 
 AstrumVK::~AstrumVK()
 {
+    destroyCommandBuffer();
     destroySwapChainFramebuffers();
     destroyPipeline();
     destroySwapChain();

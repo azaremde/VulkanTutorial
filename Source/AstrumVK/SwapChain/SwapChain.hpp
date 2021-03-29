@@ -42,6 +42,7 @@ private:
     SwapChain& operator=(const SwapChain&) = delete;
 
 public:
+    const std::vector<Framebuffer*>& getFramebuffers() const;
     void createFramebuffers(const VkRenderPass& renderPass);
     void destroyFramebuffers();
     

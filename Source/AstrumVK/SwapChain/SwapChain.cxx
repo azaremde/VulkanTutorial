@@ -187,6 +187,11 @@ SwapChain::~SwapChain()
     DebugLogOut("Swap chain destroyed.");
 }
 
+const std::vector<Framebuffer*>& SwapChain::getFramebuffers() const
+{
+    return framebuffers;
+}
+
 const VkSurfaceFormatKHR& SwapChain::getSurfaceFormat() const
 {
     return surfaceFormat;

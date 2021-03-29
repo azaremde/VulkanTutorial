@@ -18,6 +18,8 @@ private:
     Framebuffer& operator=(const Framebuffer&) = delete;
 
 public:
+    const VkFramebuffer& getFramebuffer() const;
+
     Framebuffer(GPU& _gpu, const VkExtent2D& size, const std::vector<VkImageView>& attachments, const VkRenderPass& renderPass);
     ~Framebuffer();
 };

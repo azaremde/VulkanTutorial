@@ -10,6 +10,7 @@
 #include "SwapChain/SwapChain.hpp"
 #include "Pipeline/Pipeline.hpp"
 #include "Pipeline/Shaders/Shader.hpp"
+#include "GPU/CommandBuffer.hpp"
 
 class AstrumVK
 {
@@ -41,6 +42,10 @@ private:
 
     void createSwapChainFramebuffers();
     void destroySwapChainFramebuffers();
+
+    CommandBuffer* commandBuffer;
+    void createCommandBuffer();
+    void destroyCommandBuffer();
 
     Window& window;
 
