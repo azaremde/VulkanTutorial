@@ -169,3 +169,8 @@ void AstrumVK::drawFrame()
     swapChain->submit(commandBuffer->getCommandBuffers());
     swapChain->present();
 }
+
+void AstrumVK::awaitDeviceIdle()
+{
+    vkDeviceWaitIdle(gpu->getDevice());
+}

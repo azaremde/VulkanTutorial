@@ -55,6 +55,8 @@ private:
 public:
     void drawFrame();
 
+    void awaitDeviceIdle();
+
     AstrumVK(Window& _window);
     ~AstrumVK();
 };

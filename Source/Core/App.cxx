@@ -8,4 +8,6 @@ void App::run()
 
         vk.drawFrame();
     }
+
+    vk.awaitDeviceIdle();
 }
