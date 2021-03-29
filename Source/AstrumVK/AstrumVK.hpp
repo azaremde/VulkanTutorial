@@ -29,6 +29,7 @@ private:
     void createGPU();
     void destroyGPU();
 
+    // Consider making screen-framebuffers a field of AstrumVK. (Make it independent from SwapChain).
     SwapChain* swapChain;
     void createSwapChain();
     void destroySwapChain();
@@ -37,6 +38,9 @@ private:
     Pipeline* pipeline;
     void createPipeline();
     void destroyPipeline();
+
+    void createSwapChainFramebuffers();
+    void destroySwapChainFramebuffers();
 
     Window& window;
 

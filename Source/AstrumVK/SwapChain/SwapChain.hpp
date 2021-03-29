@@ -7,6 +7,8 @@
 
 #include "AstrumVK/GPU/GPU.hpp"
 #include "AstrumVK/Surface/Surface.hpp"
+#include "AstrumVK/Framebuffers/Framebuffer.hpp"
+
 #include "Core/Window.hpp"
 
 class SwapChain
@@ -20,6 +22,8 @@ private:
     std::vector<VkImageView> imageViews;
     void createImageViews();
     void destroyImageViews();
+
+    std::vector<Framebuffer*> framebuffers;
 
     VkSurfaceFormatKHR surfaceFormat;
     void chooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -38,6 +42,9 @@ private:
     SwapChain& operator=(const SwapChain&) = delete;
 
 public:
+    void createFramebuffers(const VkRenderPass& renderPass);
+    void destroyFramebuffers();
+    
     const VkSurfaceFormatKHR& getSurfaceFormat() const;
     const VkExtent2D& getExtent() const;
 

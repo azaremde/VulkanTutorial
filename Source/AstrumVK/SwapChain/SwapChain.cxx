@@ -150,6 +150,29 @@ void SwapChain::destroyImageViews()
     }
 }
 
+void SwapChain::createFramebuffers(const VkRenderPass& renderPass)
+{
+    for (size_t i = 0; i < imageViews.size(); i++)
+    {
+        framebuffers.emplace_back(
+            new Framebuffer(
+                gpu,
+                extent,
+                { imageViews[i] },
+                renderPass
+            )
+        );
+    }
+}
+
+void SwapChain::destroyFramebuffers()
+{
+    for (const auto& framebuffer : framebuffers)
+    {
+        delete framebuffer;
+    }
+}
+
 SwapChain::SwapChain(GPU &_gpu, Surface &_surface, Window &_window) : gpu{_gpu}, surface{_surface}, window{_window}
 {
     createSwapChain();

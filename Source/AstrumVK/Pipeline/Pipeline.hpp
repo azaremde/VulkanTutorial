@@ -75,6 +75,8 @@ private:
     Pipeline& operator=(const Pipeline&) = delete;
 
 public:
+    const VkRenderPass& getRenderPass() const;
+
     Pipeline(GPU& _gpu, SwapChain& _swapChain, Shader& _shader);
     ~Pipeline();
 };

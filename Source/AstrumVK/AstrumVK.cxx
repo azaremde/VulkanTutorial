@@ -111,6 +111,16 @@ void AstrumVK::destroyPipeline()
     delete defaultShader;
 }
 
+void AstrumVK::createSwapChainFramebuffers()
+{
+    swapChain->createFramebuffers(pipeline->getRenderPass());
+}
+
+void AstrumVK::destroySwapChainFramebuffers()
+{
+    swapChain->destroyFramebuffers();
+}
+
 AstrumVK::AstrumVK(Window& _window) : window { _window }
 {
     createInstance();
@@ -119,10 +129,12 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
     createGPU();
     createSwapChain();
     createPipeline();
+    createSwapChainFramebuffers();
 }
 
 AstrumVK::~AstrumVK()
 {
+    destroySwapChainFramebuffers();
     destroyPipeline();
     destroySwapChain();
     destroyGPU();

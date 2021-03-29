@@ -222,3 +222,8 @@ Pipeline::~Pipeline()
 {
     destroyGraphicsPipeline();
 }
+
+const VkRenderPass& Pipeline::getRenderPass() const
+{
+    return renderPass->getRenderPass();
+}
