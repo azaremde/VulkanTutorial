@@ -175,13 +175,27 @@ void SwapChain::destroyFramebuffers()
 
 void SwapChain::createSemaphores()
 {    
+    imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+    imagesInFlight.resize(images.size(), VK_NULL_HANDLE);
+
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    if (vkCreateSemaphore(gpu.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
-        vkCreateSemaphore(gpu.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS) {
+    VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        throw std::runtime_error("failed to create semaphores!");
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        if (vkCreateSemaphore(gpu.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+            vkCreateSemaphore(gpu.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
+            vkCreateFence(gpu.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS)
+        {
+
+            throw std::runtime_error("failed to create semaphores!");
+        }
     }
 
     signalSemaphores.resize(1);
@@ -189,8 +203,12 @@ void SwapChain::createSemaphores()
 
 void SwapChain::destroySemaphores()
 {
-    vkDestroySemaphore(gpu.getDevice(), renderFinishedSemaphore, nullptr);
-    vkDestroySemaphore(gpu.getDevice(), imageAvailableSemaphore, nullptr);
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        vkDestroySemaphore(gpu.getDevice(), renderFinishedSemaphores[i], nullptr);
+        vkDestroySemaphore(gpu.getDevice(), imageAvailableSemaphores[i], nullptr);
+        vkDestroyFence(gpu.getDevice(), inFlightFences[i], nullptr);
+    }
 }
 
 uint32_t SwapChain::getImageIndex() const
@@ -200,7 +218,17 @@ uint32_t SwapChain::getImageIndex() const
 
 void SwapChain::acquireImage()
 {    
-    vkAcquireNextImageKHR(gpu.getDevice(), swapChain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+    vkWaitForFences(gpu.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+    vkResetFences(gpu.getDevice(), 1, &inFlightFences[currentFrame]);
+
+    vkAcquireNextImageKHR(gpu.getDevice(), swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+    // Check if a previous frame is using this image (i.e. there is its fence to wait on)
+    if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
+        vkWaitForFences(gpu.getDevice(), 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+    }
+    // Mark the image as now being in use by this frame
+    imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 }
 
 void SwapChain::submit(const std::vector<VkCommandBuffer>& commandBuffers)
@@ -208,7 +236,7 @@ void SwapChain::submit(const std::vector<VkCommandBuffer>& commandBuffers)
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {imageAvailableSemaphore};
+    VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
@@ -218,11 +246,13 @@ void SwapChain::submit(const std::vector<VkCommandBuffer>& commandBuffers)
     submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
 
     // VkSemaphore signalSemaphores[] = {renderFinishedSemaphore};
-    signalSemaphores[0] = renderFinishedSemaphore;
+    signalSemaphores[0] = renderFinishedSemaphores[currentFrame];
     submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
     submitInfo.pSignalSemaphores = signalSemaphores.data();
 
-    if (vkQueueSubmit(gpu.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+    vkResetFences(gpu.getDevice(), 1, &inFlightFences[currentFrame]);
+
+    if (vkQueueSubmit(gpu.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 }
@@ -242,6 +272,8 @@ void SwapChain::present()
     presentInfo.pResults = nullptr; // Optional
 
     vkQueuePresentKHR(gpu.getPresentQueue(), &presentInfo);
+
+    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 SwapChain::SwapChain(GPU &_gpu, Surface &_surface, Window &_window) : gpu{_gpu}, surface{_surface}, window{_window}

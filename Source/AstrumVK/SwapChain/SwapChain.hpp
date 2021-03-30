@@ -34,9 +34,22 @@ private:
     VkExtent2D extent;
     void chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
-    VkSemaphore imageAvailableSemaphore;
-    VkSemaphore renderFinishedSemaphore;
+    /**
+     * Finally found this error.
+     * The labtop needs for some reason 
+     * MAX_FRAMES_IN_FLIGHT = 3;
+     * 
+     * Todo: CHECK WHETHER THE DEVICE NEEDS 2 OR 3.
+     * Todo: substitute to a separate object.
+     */
+    const int MAX_FRAMES_IN_FLIGHT = 2;
+    std::vector<VkSemaphore> imageAvailableSemaphores;
+    std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkSemaphore> signalSemaphores;
+    uint32_t currentFrame = 0;
+
+    std::vector<VkFence> inFlightFences;
+    std::vector<VkFence> imagesInFlight;
 
     uint32_t imageIndex;
 

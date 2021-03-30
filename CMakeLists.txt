@@ -39,7 +39,6 @@ target_include_directories(
     ${externalDirectory}/GLFW/include
 )
 
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
 
 target_precompile_headers(${targetName} PUBLIC ${sourceDirectory}/Pch.hpp)
