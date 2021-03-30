@@ -15,8 +15,8 @@ class SwapChain
 {
 private:
     VkSwapchainKHR swapChain;
-    void createSwapChain();
-    void destroySwapChain();
+    void createSwapChainObject();
+    void destroySwapChainObject();
 
     std::vector<VkImage> images;
     std::vector<VkImageView> imageViews;
@@ -68,6 +68,9 @@ private:
     SwapChain& operator=(const SwapChain&) = delete;
 
 public:
+    void createSwapChain();
+    void destroySwapChain();
+
     const std::vector<Framebuffer*>& getFramebuffers() const;
     void createFramebuffers(const VkRenderPass& renderPass);
     void destroyFramebuffers();

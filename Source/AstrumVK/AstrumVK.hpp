@@ -12,7 +12,7 @@
 #include "Pipeline/Shaders/Shader.hpp"
 #include "GPU/CommandBuffer.hpp"
 
-class AstrumVK
+class AstrumVK : public IOnViewportResize
 {
 private:
     VkInstance instance;
@@ -53,6 +53,8 @@ private:
     AstrumVK& operator=(const AstrumVK&) = delete;
 
 public:
+    void onViewportResize(unsigned int newWidth, unsigned int newHeight) override;
+
     void drawFrame();
 
     void awaitDeviceIdle();

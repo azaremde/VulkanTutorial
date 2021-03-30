@@ -16,8 +16,6 @@ private:
     void destroyCommandPool();
 
     std::vector<VkCommandBuffer> commandBuffers;
-    void createCommandBuffers();
-    void destroyCommandBuffers();
 
     GPU& gpu;
     SwapChain& swapChain;
@@ -29,6 +27,10 @@ public:
     void begin(const VkRenderPass& renderPass, const std::vector<Framebuffer*>& swapChainFramebuffers, const VkExtent2D& extent, const VkPipeline& graphicsPipeline);
     void end(const VkCommandBuffer& buffer);
 
+    void createCommandBuffers();
+    void freeCommandBuffers();
+
+    const VkCommandPool& getCommandPool() const;
     const std::vector<VkCommandBuffer>& getCommandBuffers() const;
 
     CommandBuffer(GPU& _gpu, SwapChain& _swapChain);

@@ -48,7 +48,7 @@ void SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities)
     }
 }
 
-void SwapChain::createSwapChain()
+void SwapChain::createSwapChainObject()
 {
     SwapChainSupportDetails swapChainSupport = gpu.getSwapChainSupportDetails();
     chooseSurfaceFormat(swapChainSupport.formats);
@@ -96,7 +96,8 @@ void SwapChain::createSwapChain()
 
     VK_CHECK(
         vkCreateSwapchainKHR(gpu.getDevice(), &createInfo, nullptr, &swapChain),
-        "Failed to create swap chain.");
+        "Failed to create swap chain."
+    );
 
     vkGetSwapchainImagesKHR(gpu.getDevice(), swapChain, &imageCount, nullptr);
     images.resize(imageCount);
@@ -105,7 +106,7 @@ void SwapChain::createSwapChain()
     DebugLogOut("Swap chain successfully created.");
 }
 
-void SwapChain::destroySwapChain()
+void SwapChain::destroySwapChainObject()
 {
     vkDestroySwapchainKHR(gpu.getDevice(), swapChain, nullptr);
 }
@@ -148,10 +149,15 @@ void SwapChain::destroyImageViews()
 
         DebugLogOut("Image view destroyed.");
     }
+
+    imageViews.clear();
+    images.clear();
 }
 
 void SwapChain::createFramebuffers(const VkRenderPass& renderPass)
 {
+    framebuffers.clear();
+
     for (size_t i = 0; i < imageViews.size(); i++)
     {
         framebuffers.emplace_back(new Framebuffer(gpu, extent, { imageViews[i] }, renderPass));
@@ -216,6 +222,7 @@ void SwapChain::acquireImage()
     {
         vkWaitForFences(gpu.getDevice(), 1, &sync.imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
     }
+
     // Mark the image as now being in use by this frame
     sync.imagesInFlight[imageIndex] = sync.inFlightFences[sync.currentFrame];
 }
@@ -265,20 +272,34 @@ void SwapChain::present()
     sync.currentFrame = (sync.currentFrame + 1) % sync.MAX_FRAMES_IN_FLIGHT;
 }
 
+void SwapChain::createSwapChain()
+{
+    createSwapChainObject();
+    createImageViews();
+
+    sync.createSyncObjects(gpu, static_cast<uint32_t>(images.size()));
+}
+
+void SwapChain::destroySwapChain()
+{
+    sync.destroySyncObjects(gpu);
+    destroyImageViews();
+    destroySwapChainObject();
+
+    sync.inFlightFences.clear();
+    sync.imagesInFlight.clear();
+
+    DebugLogOut("Swap chain destroyed.");
+}
+
 SwapChain::SwapChain(GPU &_gpu, Surface &_surface, Window &_window) : gpu{_gpu}, surface{_surface}, window{_window}
 {
     createSwapChain();
-    createImageViews();
-    sync.createSyncObjects(gpu, static_cast<uint32_t>(images.size()));
 }
 
 SwapChain::~SwapChain()
 {
-    sync.destroySyncObjects(gpu);
-    destroyImageViews();
     destroySwapChain();
-
-    DebugLogOut("Swap chain destroyed.");
 }
 
 const std::vector<Framebuffer*>& SwapChain::getFramebuffers() const

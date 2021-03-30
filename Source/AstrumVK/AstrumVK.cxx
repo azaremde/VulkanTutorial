@@ -134,6 +134,8 @@ void AstrumVK::destroyCommandBuffer()
 
 AstrumVK::AstrumVK(Window& _window) : window { _window }
 {
+    window.addOnViewportResizeSubscriber(this);
+
     createInstance();
     createDebugger();
     createSurface();
@@ -168,4 +170,22 @@ void AstrumVK::drawFrame()
 void AstrumVK::awaitDeviceIdle()
 {
     vkDeviceWaitIdle(gpu->getDevice());
+}
+
+void AstrumVK::onViewportResize(unsigned int newWidth, unsigned int newHeight)
+{
+    awaitDeviceIdle();
+
+    gpu->recheckDeviceCapabilities();
+
+    commandBuffer->freeCommandBuffers();
+    swapChain->destroyFramebuffers();
+    pipeline->destroyGraphicsPipeline();
+    swapChain->destroySwapChain();
+
+    swapChain->createSwapChain();
+    pipeline->createGraphicsPipeline();
+    swapChain->createFramebuffers(pipeline->getRenderPass());
+    commandBuffer->createCommandBuffers();
+    commandBuffer->begin(pipeline->getRenderPass(), swapChain->getFramebuffers(), swapChain->getExtent(), pipeline->getPipeline());
 }

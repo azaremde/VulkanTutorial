@@ -64,9 +64,6 @@ private:
     void createPipeline();
     void destroyPipeline();
 
-    void createGraphicsPipeline();
-    void destroyGraphicsPipeline();
-
     GPU& gpu;
     SwapChain& swapChain;
     Shader& shader;
@@ -75,6 +72,9 @@ private:
     Pipeline& operator=(const Pipeline&) = delete;
 
 public:
+    void createGraphicsPipeline();
+    void destroyGraphicsPipeline();
+
     const VkPipeline& getPipeline() const;
     const VkRenderPass& getRenderPass() const;
 

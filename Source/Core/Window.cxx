@@ -9,11 +9,29 @@ Window::Window(unsigned int _width, unsigned int _height, const std::string& _ti
     glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     pGlfwWindow = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+    glfwSetWindowUserPointer(pGlfwWindow, this);
+
+    glfwSetWindowSizeCallback(pGlfwWindow, [](GLFWwindow* pGlfwWindow, int newWidth, int newHeight){
+        Window& self = *reinterpret_cast<Window*>(glfwGetWindowUserPointer(pGlfwWindow));
+        self.onViewportResize(newWidth, newHeight);
+    });
 
     DebugLogOut("Window created.");
+}
+
+void Window::onViewportResize(int newWidth, int newHeight)
+{
+    for (const auto& sub : onViewportResizeSubscribers)
+    {
+        sub->onViewportResize(newWidth, newHeight);
+    }
+}
+
+void Window::addOnViewportResizeSubscriber(IOnViewportResize* subscriber)
+{
+    onViewportResizeSubscribers.emplace_back(subscriber);
 }
 
 bool Window::shouldClose() const

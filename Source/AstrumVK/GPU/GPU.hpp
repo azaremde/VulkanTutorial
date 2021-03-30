@@ -49,6 +49,8 @@ public:
     GPU(VkInstance& _instance, Surface& _surface);
     ~GPU();
 
+    void recheckDeviceCapabilities();
+
     const VkQueue& getGraphicsQueue() const;
     const VkQueue& getPresentQueue() const;
 

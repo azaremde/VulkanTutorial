@@ -105,6 +105,18 @@ GPU::~GPU()
     DebugLogOut("Logical device has been destroyed.");
 }
 
+void GPU::recheckDeviceCapabilities()
+{
+    queues.familyIndices = QueueFamilyIndices::of(physicalDevice, surface.getSurface());
+
+    bool extensionsSupported = checkDeviceExtensionsSupport(physicalDevice);
+
+    if (extensionsSupported)
+    {
+        swapChainSupport = SwapChainSupportDetails::of(physicalDevice, surface.getSurface());
+    }
+}
+
 bool GPU::isDeviceSuitable(const VkPhysicalDevice& physDevice) {
     queues.familyIndices = QueueFamilyIndices::of(physDevice, surface.getSurface());
 

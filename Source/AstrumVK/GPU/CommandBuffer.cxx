@@ -42,7 +42,7 @@ void CommandBuffer::begin(const VkRenderPass& renderPass, const std::vector<Fram
 {
     for (size_t i = 0; i < commandBuffers.size(); i++)
     {
-       VkCommandBufferBeginInfo beginInfo{};
+        VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = 0; // Optional
         beginInfo.pInheritanceInfo = nullptr; // Optional
@@ -82,9 +82,14 @@ void CommandBuffer::end(const VkCommandBuffer& buffer)
     );
 }
 
-void CommandBuffer::destroyCommandBuffers()
+void CommandBuffer::freeCommandBuffers()
 {
-    // ...
+    vkFreeCommandBuffers(
+        gpu.getDevice(), 
+        commandPool, 
+        static_cast<uint32_t>(commandBuffers.size()), 
+        commandBuffers.data()
+    );
 }
 
 CommandBuffer::CommandBuffer(GPU& _gpu, SwapChain& _swapChain) : gpu { _gpu }, swapChain { _swapChain }
@@ -96,6 +101,11 @@ CommandBuffer::CommandBuffer(GPU& _gpu, SwapChain& _swapChain) : gpu { _gpu }, s
 CommandBuffer::~CommandBuffer()
 {
     destroyCommandPool();
+}
+
+const VkCommandPool& CommandBuffer::getCommandPool() const
+{
+    return commandPool;
 }
 
 const std::vector<VkCommandBuffer>& CommandBuffer::getCommandBuffers() const
