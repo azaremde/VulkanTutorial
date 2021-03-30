@@ -34,24 +34,31 @@ private:
     VkExtent2D extent;
     void chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
+    uint32_t imageIndex { 0 };
+
     /**
      * Finally found this error.
      * The labtop needs for some reason 
      * MAX_FRAMES_IN_FLIGHT = 3;
      * 
      * Todo: CHECK WHETHER THE DEVICE NEEDS 2 OR 3.
-     * Todo: substitute to a separate object.
      */
-    const int MAX_FRAMES_IN_FLIGHT = 2;
-    std::vector<VkSemaphore> imageAvailableSemaphores;
-    std::vector<VkSemaphore> renderFinishedSemaphores;
-    std::vector<VkSemaphore> signalSemaphores;
-    uint32_t currentFrame = 0;
+    struct Sync 
+    {
+        const int MAX_FRAMES_IN_FLIGHT { 2 };
 
-    std::vector<VkFence> inFlightFences;
-    std::vector<VkFence> imagesInFlight;
+        std::vector<VkSemaphore> imageAvailableSemaphores;
+        std::vector<VkSemaphore> renderFinishedSemaphores;
+        std::vector<VkSemaphore> signalSemaphores;
 
-    uint32_t imageIndex;
+        std::vector<VkFence> inFlightFences;
+        std::vector<VkFence> imagesInFlight;
+
+        void createSyncObjects(GPU& gpu, uint32_t imageCount);
+        void destroySyncObjects(GPU& gpu);
+
+        uint32_t currentFrame { 0 };
+    } sync;
 
     GPU& gpu;
     Surface& surface;
@@ -65,10 +72,6 @@ public:
     void createFramebuffers(const VkRenderPass& renderPass);
     void destroyFramebuffers();
 
-    void createSemaphores();
-    void destroySemaphores();
-
-    uint32_t getImageIndex() const;
     void acquireImage();
     void submit(const std::vector<VkCommandBuffer>& commandBuffers);
     void present();

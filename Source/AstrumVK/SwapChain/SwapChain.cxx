@@ -173,12 +173,40 @@ void SwapChain::destroyFramebuffers()
     }
 }
 
-void SwapChain::createSemaphores()
-{    
+// void SwapChain::createSemaphores()
+// {    
+//     sync.imageAvailableSemaphores.resize(sync.MAX_FRAMES_IN_FLIGHT);
+//     sync.renderFinishedSemaphores.resize(sync.MAX_FRAMES_IN_FLIGHT);
+//     sync.inFlightFences.resize(sync.MAX_FRAMES_IN_FLIGHT);
+//     sync.imagesInFlight.resize(images.size(), VK_NULL_HANDLE);
+
+//     VkSemaphoreCreateInfo semaphoreInfo{};
+//     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+//     VkFenceCreateInfo fenceInfo{};
+//     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+//     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+//     for (size_t i = 0; i < sync.MAX_FRAMES_IN_FLIGHT; i++)
+//     {
+//         if (vkCreateSemaphore(gpu.getDevice(), &semaphoreInfo, nullptr, &sync.imageAvailableSemaphores[i]) != VK_SUCCESS ||
+//             vkCreateSemaphore(gpu.getDevice(), &semaphoreInfo, nullptr, &sync.renderFinishedSemaphores[i]) != VK_SUCCESS ||
+//             vkCreateFence(gpu.getDevice(), &fenceInfo, nullptr, &sync.inFlightFences[i]) != VK_SUCCESS)
+//         {
+
+//             throw std::runtime_error("failed to create semaphores!");
+//         }
+//     }
+
+//     sync.signalSemaphores.resize(1);
+// }
+
+void SwapChain::Sync::createSyncObjects(GPU& gpu, uint32_t imageCount)
+{
     imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-    imagesInFlight.resize(images.size(), VK_NULL_HANDLE);
+    imagesInFlight.resize(imageCount, VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -201,7 +229,7 @@ void SwapChain::createSemaphores()
     signalSemaphores.resize(1);
 }
 
-void SwapChain::destroySemaphores()
+void SwapChain::Sync::destroySyncObjects(GPU& gpu)
 {
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
@@ -211,24 +239,20 @@ void SwapChain::destroySemaphores()
     }
 }
 
-uint32_t SwapChain::getImageIndex() const
-{
-    return imageIndex;
-}
-
 void SwapChain::acquireImage()
 {    
-    vkWaitForFences(gpu.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-    vkResetFences(gpu.getDevice(), 1, &inFlightFences[currentFrame]);
+    vkWaitForFences(gpu.getDevice(), 1, &sync.inFlightFences[sync.currentFrame], VK_TRUE, UINT64_MAX);
+    vkResetFences(gpu.getDevice(), 1, &sync.inFlightFences[sync.currentFrame]);
 
-    vkAcquireNextImageKHR(gpu.getDevice(), swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+    vkAcquireNextImageKHR(gpu.getDevice(), swapChain, UINT64_MAX, sync.imageAvailableSemaphores[sync.currentFrame], VK_NULL_HANDLE, &imageIndex);
 
     // Check if a previous frame is using this image (i.e. there is its fence to wait on)
-    if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
-        vkWaitForFences(gpu.getDevice(), 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+    if (sync.imagesInFlight[imageIndex] != VK_NULL_HANDLE) 
+    {
+        vkWaitForFences(gpu.getDevice(), 1, &sync.imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
     }
     // Mark the image as now being in use by this frame
-    imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+    sync.imagesInFlight[imageIndex] = sync.inFlightFences[sync.currentFrame];
 }
 
 void SwapChain::submit(const std::vector<VkCommandBuffer>& commandBuffers)
@@ -236,7 +260,7 @@ void SwapChain::submit(const std::vector<VkCommandBuffer>& commandBuffers)
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
+    VkSemaphore waitSemaphores[] = { sync.imageAvailableSemaphores[sync.currentFrame] };
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
@@ -245,16 +269,16 @@ void SwapChain::submit(const std::vector<VkCommandBuffer>& commandBuffers)
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
 
-    // VkSemaphore signalSemaphores[] = {renderFinishedSemaphore};
-    signalSemaphores[0] = renderFinishedSemaphores[currentFrame];
-    submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
-    submitInfo.pSignalSemaphores = signalSemaphores.data();
+    sync.signalSemaphores[0] = sync.renderFinishedSemaphores[sync.currentFrame];
+    submitInfo.signalSemaphoreCount = static_cast<uint32_t>(sync.signalSemaphores.size());
+    submitInfo.pSignalSemaphores = sync.signalSemaphores.data();
 
-    vkResetFences(gpu.getDevice(), 1, &inFlightFences[currentFrame]);
+    vkResetFences(gpu.getDevice(), 1, &sync.inFlightFences[sync.currentFrame]);
 
-    if (vkQueueSubmit(gpu.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
-        throw std::runtime_error("failed to submit draw command buffer!");
-    }
+    VK_CHECK(
+        vkQueueSubmit(gpu.getGraphicsQueue(), 1, &submitInfo, sync.inFlightFences[sync.currentFrame]), 
+        "Failed to submit draw command buffer."
+    );
 }
 
 void SwapChain::present()
@@ -262,8 +286,8 @@ void SwapChain::present()
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
-    presentInfo.pWaitSemaphores = signalSemaphores.data();
+    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(sync.signalSemaphores.size());
+    presentInfo.pWaitSemaphores = sync.signalSemaphores.data();
 
     VkSwapchainKHR swapChains[] = { swapChain };
     presentInfo.swapchainCount = 1;
@@ -273,17 +297,19 @@ void SwapChain::present()
 
     vkQueuePresentKHR(gpu.getPresentQueue(), &presentInfo);
 
-    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    sync.currentFrame = (sync.currentFrame + 1) % sync.MAX_FRAMES_IN_FLIGHT;
 }
 
 SwapChain::SwapChain(GPU &_gpu, Surface &_surface, Window &_window) : gpu{_gpu}, surface{_surface}, window{_window}
 {
     createSwapChain();
     createImageViews();
+    sync.createSyncObjects(gpu, static_cast<uint32_t>(images.size()));
 }
 
 SwapChain::~SwapChain()
 {
+    sync.destroySyncObjects(gpu);
     destroyImageViews();
     destroySwapChain();
 
