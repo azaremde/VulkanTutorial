@@ -154,14 +154,7 @@ void SwapChain::createFramebuffers(const VkRenderPass& renderPass)
 {
     for (size_t i = 0; i < imageViews.size(); i++)
     {
-        framebuffers.emplace_back(
-            new Framebuffer(
-                gpu,
-                extent,
-                { imageViews[i] },
-                renderPass
-            )
-        );
+        framebuffers.emplace_back(new Framebuffer(gpu, extent, { imageViews[i] }, renderPass));
     }
 }
 
@@ -172,34 +165,6 @@ void SwapChain::destroyFramebuffers()
         delete framebuffer;
     }
 }
-
-// void SwapChain::createSemaphores()
-// {    
-//     sync.imageAvailableSemaphores.resize(sync.MAX_FRAMES_IN_FLIGHT);
-//     sync.renderFinishedSemaphores.resize(sync.MAX_FRAMES_IN_FLIGHT);
-//     sync.inFlightFences.resize(sync.MAX_FRAMES_IN_FLIGHT);
-//     sync.imagesInFlight.resize(images.size(), VK_NULL_HANDLE);
-
-//     VkSemaphoreCreateInfo semaphoreInfo{};
-//     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-//     VkFenceCreateInfo fenceInfo{};
-//     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-//     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-//     for (size_t i = 0; i < sync.MAX_FRAMES_IN_FLIGHT; i++)
-//     {
-//         if (vkCreateSemaphore(gpu.getDevice(), &semaphoreInfo, nullptr, &sync.imageAvailableSemaphores[i]) != VK_SUCCESS ||
-//             vkCreateSemaphore(gpu.getDevice(), &semaphoreInfo, nullptr, &sync.renderFinishedSemaphores[i]) != VK_SUCCESS ||
-//             vkCreateFence(gpu.getDevice(), &fenceInfo, nullptr, &sync.inFlightFences[i]) != VK_SUCCESS)
-//         {
-
-//             throw std::runtime_error("failed to create semaphores!");
-//         }
-//     }
-
-//     sync.signalSemaphores.resize(1);
-// }
 
 void SwapChain::Sync::createSyncObjects(GPU& gpu, uint32_t imageCount)
 {
@@ -222,7 +187,7 @@ void SwapChain::Sync::createSyncObjects(GPU& gpu, uint32_t imageCount)
             vkCreateFence(gpu.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS)
         {
 
-            throw std::runtime_error("failed to create semaphores!");
+            throw std::runtime_error("Failed to create semaphores.");
         }
     }
 
