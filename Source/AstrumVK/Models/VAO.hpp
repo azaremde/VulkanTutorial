@@ -13,7 +13,11 @@ public:
     VkBuffer buffer;
     VkDeviceMemory memory;
 
-    uint32_t vertexCount;
+    VkBuffer indexBuffer;
+    VkDeviceMemory indexBufferMemory;
+
+    uint32_t vertexCount { 0 };
+    uint32_t indexCount { 0 };
 
     void destroy(GPU& gpu);
 

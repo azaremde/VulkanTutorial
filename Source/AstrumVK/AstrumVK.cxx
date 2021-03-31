@@ -132,20 +132,6 @@ void AstrumVK::destroyCommandBuffer()
     delete commandBuffer;
 }
 
-const std::vector<Vertex> vertices1 = {
-    {{ 0.0f - 0.4f, -0.2f }, {1.0f, 0.0f, 0.0f}},
-    {{ 0.2f - 0.4f,  0.2f }, {0.0f, 1.0f, 0.0f}},
-    {{-0.2f - 0.4f,  0.2f }, {0.0f, 0.0f, 1.0f}}
-};
-
-const std::vector<Vertex> vertices2 = {
-    {{ 0.0f + 0.4f, -0.2f }, {1.0f, 1.0f, 0.0f}},
-    {{ 0.2f + 0.4f,  0.2f }, {0.0f, 1.0f, 0.0f}},
-    {{-0.2f + 0.4f,  0.2f }, {0.0f, 0.0f, 1.0f}}
-};
-
-std::vector<VAO*> renderList;
-
 AstrumVK::AstrumVK(Window& _window) : window { _window }
 {
     window.addOnViewportResizeSubscriber(this);
@@ -159,15 +145,40 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
     createSwapChainFramebuffers();
     createCommandBuffer();
 
-    renderList.emplace_back(commandBuffer->createVertexBuffer(vertices1));
-    renderList.emplace_back(commandBuffer->createVertexBuffer(vertices2));
+    VAO* vao1 = new VAO();
+    VAO* vao2 = new VAO();
+    
+    commandBuffer->createVertexBuffer(vao1, {
+        {{-0.2f - 0.3f, -0.2f}, {1.0f, 0.0f, 0.0f}},
+        {{ 0.2f - 0.3f, -0.2f}, {0.0f, 1.0f, 0.0f}},
+        {{ 0.2f - 0.3f,  0.2f}, {0.0f, 0.0f, 1.0f}},
+        {{-0.2f - 0.3f,  0.2f}, {1.0f, 1.0f, 1.0f}}
+    });
+
+    commandBuffer->createIndexBuffer(vao1, std::vector<uint32_t> {
+        0, 1, 2, 2, 3, 0
+    });
+    
+    commandBuffer->createVertexBuffer(vao2, {
+        {{-0.2f + 0.3f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+        {{ 0.2f + 0.3f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+        {{ 0.2f + 0.3f,  0.5f}, {0.0f, 0.0f, 1.0f}},
+        {{-0.2f + 0.3f,  0.5f}, {1.0f, 1.0f, 1.0f}}
+    });
+
+    commandBuffer->createIndexBuffer(vao2, {
+        0, 1, 2, 2, 3, 0
+    });
+    
+    renderList.emplace_back(vao1);
+    renderList.emplace_back(vao2);
 
     commandBuffer->render(
         pipeline->getRenderPass(),
         swapChain->getFramebuffers(),
         swapChain->getExtent(),
         pipeline->getPipeline(),
-        renderList
+        {}
     );
 }
 
@@ -191,9 +202,46 @@ AstrumVK::~AstrumVK()
 
 void AstrumVK::drawFrame()
 {
+    static float time { 0.0f };
+    static float deltaTime { 0.0f };
+    static float fpsTimer { 0.0f };
+    static unsigned int fps { 0 };
+
+    time = static_cast<float>(glfwGetTime());
+
+    fpsTimer += deltaTime;
+
+    if (fpsTimer >= 1.0f)
+    {
+        fps = static_cast<unsigned int>(1.0f / deltaTime);
+        fpsTimer = 0;
+    }
+
+    if (glfwGetKey(window.getGlfwWindow(), GLFW_KEY_SPACE))
+    {
+        static bool pressed { false };
+
+        if (!pressed)
+        {
+            awaitDeviceIdle();
+
+            commandBuffer->render(
+                pipeline->getRenderPass(),
+                swapChain->getFramebuffers(),
+                swapChain->getExtent(),
+                pipeline->getPipeline(),
+                renderList
+            );
+
+            pressed = true;
+        }
+    }
+
     swapChain->acquireImage();
     swapChain->submit(commandBuffer->getCommandBuffers());
     swapChain->present();
+
+    deltaTime = static_cast<float>(glfwGetTime()) - time;
 }
 
 void AstrumVK::awaitDeviceIdle()

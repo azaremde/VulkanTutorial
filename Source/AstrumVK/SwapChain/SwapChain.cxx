@@ -15,13 +15,18 @@ void SwapChain::chooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &avail
 
 void SwapChain::choosePresentationMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
 {
+// #define SWAP_CHAIN_FORCE_SPEED
+
+#ifdef SWAP_CHAIN_FORCE_SPEED
     for (const auto &availablePresentMode : availablePresentModes)
     {
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
         {
             presentMode = availablePresentMode;
+            return;
         }
     }
+#endif
 
     presentMode = VK_PRESENT_MODE_FIFO_KHR;
 }

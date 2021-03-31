@@ -47,6 +47,8 @@ private:
     void createCommandBuffer();
     void destroyCommandBuffer();
 
+    std::vector<VAO*> renderList;
+
     Window& window;
 
     AstrumVK(const AstrumVK&) = delete;

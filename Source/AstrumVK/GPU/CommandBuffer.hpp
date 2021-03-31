@@ -31,6 +31,8 @@ private:
 
 public:
     VAO* createVertexBuffer(const std::vector<Vertex>& vertices);
+    void createVertexBuffer(VAO* vao, const std::vector<Vertex>& vertices);
+    void createIndexBuffer(VAO* vao, const std::vector<uint32_t>& indices);
 
     void render(
         const VkRenderPass& renderPass, 
