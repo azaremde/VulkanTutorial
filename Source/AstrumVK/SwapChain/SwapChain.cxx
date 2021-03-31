@@ -276,7 +276,6 @@ void SwapChain::createSwapChain()
 {
     createSwapChainObject();
     createImageViews();
-
     sync.createSyncObjects(gpu, static_cast<uint32_t>(images.size()));
 }
 

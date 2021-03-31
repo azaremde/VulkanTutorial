@@ -1,5 +1,7 @@
 #include "Pipeline.hpp"
 
+#include "AstrumVK/Models/Vertex.hpp"
+
 void Pipeline::setShaderStages()
 {
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
@@ -23,12 +25,17 @@ void Pipeline::setShaderStages()
 }
 
 void Pipeline::Fixed::setVertexInputInfo()
-{
+{    
+    bindings = Vertex::getBindingDescription();
+    attributes = Vertex::getAttributeDescriptions();
+
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
-    vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
+
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributes.size());
+
+    vertexInputInfo.pVertexBindingDescriptions = &bindings; // Optional
+    vertexInputInfo.pVertexAttributeDescriptions = attributes.data(); // Optional
 }
 
 void Pipeline::Fixed::setInputAssemblyInfo()
@@ -187,7 +194,7 @@ void Pipeline::destroyPipeline()
 void Pipeline::createGraphicsPipeline()
 {
     setShaderStages();
-    
+
     fixed.setVertexInputInfo();
     fixed.setInputAssemblyInfo();
     fixed.setViewportInfo(swapChain.getExtent());

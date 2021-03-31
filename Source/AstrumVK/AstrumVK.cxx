@@ -132,6 +132,20 @@ void AstrumVK::destroyCommandBuffer()
     delete commandBuffer;
 }
 
+const std::vector<Vertex> vertices1 = {
+    {{ 0.0f - 0.4f, -0.2f }, {1.0f, 0.0f, 0.0f}},
+    {{ 0.2f - 0.4f,  0.2f }, {0.0f, 1.0f, 0.0f}},
+    {{-0.2f - 0.4f,  0.2f }, {0.0f, 0.0f, 1.0f}}
+};
+
+const std::vector<Vertex> vertices2 = {
+    {{ 0.0f + 0.4f, -0.2f }, {1.0f, 1.0f, 0.0f}},
+    {{ 0.2f + 0.4f,  0.2f }, {0.0f, 1.0f, 0.0f}},
+    {{-0.2f + 0.4f,  0.2f }, {0.0f, 0.0f, 1.0f}}
+};
+
+std::vector<VAO*> renderList;
+
 AstrumVK::AstrumVK(Window& _window) : window { _window }
 {
     window.addOnViewportResizeSubscriber(this);
@@ -145,11 +159,26 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
     createSwapChainFramebuffers();
     createCommandBuffer();
 
-    commandBuffer->begin(pipeline->getRenderPass(), swapChain->getFramebuffers(), swapChain->getExtent(), pipeline->getPipeline());
+    renderList.emplace_back(commandBuffer->createVertexBuffer(vertices1));
+    renderList.emplace_back(commandBuffer->createVertexBuffer(vertices2));
+
+    commandBuffer->render(
+        pipeline->getRenderPass(), 
+        swapChain->getFramebuffers(), 
+        swapChain->getExtent(), 
+        pipeline->getPipeline(), 
+        renderList
+    );
 }
 
 AstrumVK::~AstrumVK()
 {
+    for (auto& vao : renderList)
+    {
+        vao->destroy(*gpu);
+        delete vao;
+    }
+
     destroyCommandBuffer();
     destroySwapChainFramebuffers();
     destroyPipeline();
@@ -187,5 +216,12 @@ void AstrumVK::onViewportResize(unsigned int newWidth, unsigned int newHeight)
     pipeline->createGraphicsPipeline();
     swapChain->createFramebuffers(pipeline->getRenderPass());
     commandBuffer->createCommandBuffers();
-    commandBuffer->begin(pipeline->getRenderPass(), swapChain->getFramebuffers(), swapChain->getExtent(), pipeline->getPipeline());
+
+    commandBuffer->render(
+        pipeline->getRenderPass(), 
+        swapChain->getFramebuffers(), 
+        swapChain->getExtent(), 
+        pipeline->getPipeline(), 
+        renderList
+    );
 }

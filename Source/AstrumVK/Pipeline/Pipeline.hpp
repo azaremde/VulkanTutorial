@@ -20,6 +20,8 @@ private:
 
     struct Fixed
     {
+        VkVertexInputBindingDescription bindings;
+        std::vector<VkVertexInputAttributeDescription> attributes;
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         void setVertexInputInfo();
 

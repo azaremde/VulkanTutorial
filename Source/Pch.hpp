@@ -11,12 +11,16 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <iostream>
 #include <optional>
 #include <fstream>
 #include <cassert>
 #include <string>
 #include <vector>
+#include <array>
 #include <set>
 
 #define FORCE_DEBUG_MESSAGES

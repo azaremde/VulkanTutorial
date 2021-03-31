@@ -7,6 +7,21 @@
 
 #include "GPU.hpp"
 #include "AstrumVK/SwapChain/SwapChain.hpp"
+#include "AstrumVK/Models/Vertex.hpp"
+
+struct VAO
+{
+    VkBuffer buffer;
+    VkDeviceMemory memory;
+
+    uint32_t vertexCount;
+
+    void destroy(GPU& gpu)
+    {
+        vkDestroyBuffer(gpu.getDevice(), buffer, nullptr);
+        vkFreeMemory(gpu.getDevice(), memory, nullptr);
+    }
+};
 
 class CommandBuffer
 {
@@ -24,7 +39,17 @@ private:
     CommandBuffer& operator=(const CommandBuffer&) = delete;
 
 public:
-    void begin(const VkRenderPass& renderPass, const std::vector<Framebuffer*>& swapChainFramebuffers, const VkExtent2D& extent, const VkPipeline& graphicsPipeline);
+    VAO* createVertexBuffer(const std::vector<Vertex>& vertices);
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+    void render(
+        const VkRenderPass& renderPass, 
+        const std::vector<Framebuffer*>& swapChainFramebuffers, 
+        const VkExtent2D& extent, 
+        const VkPipeline& graphicsPipeline,
+        const std::vector<VAO*>& vaos
+    );
+
     void end(const VkCommandBuffer& buffer);
 
     void createCommandBuffers();

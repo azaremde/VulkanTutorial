@@ -68,6 +68,9 @@ private:
     SwapChain& operator=(const SwapChain&) = delete;
 
 public:
+    SwapChain(GPU& _gpu, Surface& _surface, Window& _window);
+    ~SwapChain();
+
     void createSwapChain();
     void destroySwapChain();
 
@@ -81,9 +84,6 @@ public:
     
     const VkSurfaceFormatKHR& getSurfaceFormat() const;
     const VkExtent2D& getExtent() const;
-
-    SwapChain(GPU& _gpu, Surface& _surface, Window& _window);
-    ~SwapChain();
 };
 
 #endif
