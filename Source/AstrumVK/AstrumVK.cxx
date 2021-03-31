@@ -163,10 +163,10 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
     renderList.emplace_back(commandBuffer->createVertexBuffer(vertices2));
 
     commandBuffer->render(
-        pipeline->getRenderPass(), 
-        swapChain->getFramebuffers(), 
-        swapChain->getExtent(), 
-        pipeline->getPipeline(), 
+        pipeline->getRenderPass(),
+        swapChain->getFramebuffers(),
+        swapChain->getExtent(),
+        pipeline->getPipeline(),
         renderList
     );
 }
