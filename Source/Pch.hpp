@@ -23,7 +23,7 @@
 #include <array>
 #include <set>
 
-// #define FORCE_DEBUG_MESSAGES
+#define FORCE_DEBUG_MESSAGES
 
 #ifdef NDEBUG
     #define RELEASE_CONFIG

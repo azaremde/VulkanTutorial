@@ -202,46 +202,37 @@ AstrumVK::~AstrumVK()
 
 void AstrumVK::drawFrame()
 {
-    static float time { 0.0f };
-    static float deltaTime { 0.0f };
-    static float fpsTimer { 0.0f };
-    static unsigned int fps { 0 };
+    time.beginFrame();
 
-    time = static_cast<float>(glfwGetTime());
+    static float timer { 0.0f };
 
-    fpsTimer += deltaTime;
+    timer += time.getDeltaTime();
 
-    if (fpsTimer >= 1.0f)
+    if (timer >= 1.0f)
     {
-        fps = static_cast<unsigned int>(1.0f / deltaTime);
-        fpsTimer = 0;
+        DebugLogOut(time.getFps());
+
+        timer = 0.0f;
     }
 
     if (glfwGetKey(window.getGlfwWindow(), GLFW_KEY_SPACE))
     {
-        static bool pressed { false };
+        awaitDeviceIdle();
 
-        if (!pressed)
-        {
-            awaitDeviceIdle();
-
-            commandBuffer->render(
-                pipeline->getRenderPass(),
-                swapChain->getFramebuffers(),
-                swapChain->getExtent(),
-                pipeline->getPipeline(),
-                renderList
-            );
-
-            pressed = true;
-        }
+        commandBuffer->render(
+            pipeline->getRenderPass(),
+            swapChain->getFramebuffers(),
+            swapChain->getExtent(),
+            pipeline->getPipeline(),
+            renderList
+        );
     }
 
     swapChain->acquireImage();
     swapChain->submit(commandBuffer->getCommandBuffers());
     swapChain->present();
 
-    deltaTime = static_cast<float>(glfwGetTime()) - time;
+    time.endFrame();
 }
 
 void AstrumVK::awaitDeviceIdle()

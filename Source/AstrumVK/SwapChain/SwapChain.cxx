@@ -15,7 +15,10 @@ void SwapChain::chooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &avail
 
 void SwapChain::choosePresentationMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
 {
-// #define SWAP_CHAIN_FORCE_SPEED
+
+    // Todo: Make it depend on a parameter.
+
+    // #define SWAP_CHAIN_FORCE_SPEED
 
 #ifdef SWAP_CHAIN_FORCE_SPEED
     for (const auto &availablePresentMode : availablePresentModes)

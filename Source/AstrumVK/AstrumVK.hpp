@@ -11,6 +11,7 @@
 #include "Pipeline/Pipeline.hpp"
 #include "Pipeline/Shaders/Shader.hpp"
 #include "GPU/CommandBuffer.hpp"
+#include "Time.hpp"
 
 class AstrumVK : public IOnViewportResize
 {
@@ -48,6 +49,8 @@ private:
     void destroyCommandBuffer();
 
     std::vector<VAO*> renderList;
+
+    Time time;
 
     Window& window;
 

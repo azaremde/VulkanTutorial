@@ -30,7 +30,6 @@ private:
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 public:
-    VAO* createVertexBuffer(const std::vector<Vertex>& vertices);
     void createVertexBuffer(VAO* vao, const std::vector<Vertex>& vertices);
     void createIndexBuffer(VAO* vao, const std::vector<uint32_t>& indices);
 
@@ -41,8 +40,6 @@ public:
         const VkPipeline& graphicsPipeline,
         const std::vector<VAO*>& vaos
     );
-
-    void end(const VkCommandBuffer& buffer);
 
     void createCommandBuffers();
     void freeCommandBuffers();

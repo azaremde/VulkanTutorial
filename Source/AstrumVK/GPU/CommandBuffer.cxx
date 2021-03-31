@@ -63,44 +63,6 @@ void CommandBuffer::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceS
     vkFreeCommandBuffers(gpu.getDevice(), commandPool, 1, &commandBuffer);
 }
 
-VAO* CommandBuffer::createVertexBuffer(const std::vector<Vertex>& vertices) {
-    VAO* result = new VAO();
-
-    result->vertexCount = static_cast<uint32_t>(vertices.size());
-    
-    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
-    
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    createBuffer(
-        bufferSize, 
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-        stagingBuffer, 
-        stagingBufferMemory
-    );
-
-    void* data;
-    vkMapMemory(gpu.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, vertices.data(), (size_t) bufferSize);
-    vkUnmapMemory(gpu.getDevice(), stagingBufferMemory);
-
-    createBuffer(
-        bufferSize, 
-        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-        result->buffer, 
-        result->memory
-    );
-
-    copyBuffer(stagingBuffer, result->buffer, bufferSize);
-    
-    vkDestroyBuffer(gpu.getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(gpu.getDevice(), stagingBufferMemory, nullptr);
-
-    return result;
-}
-
 void CommandBuffer::createVertexBuffer(VAO* vao, const std::vector<Vertex>& vertices)
 {
     vao->vertexCount = static_cast<uint32_t>(vertices.size());
@@ -268,21 +230,14 @@ void CommandBuffer::render(
             vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &vao->buffer, offsets);
             vkCmdBindIndexBuffer(commandBuffers[i], vao->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
             vkCmdDrawIndexed(commandBuffers[i], vao->indexCount, 1, 0, 0, 0);
-            // vkCmdDraw(commandBuffers[i], vao->vertexCount, 1, 0, 0);
-            // vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(vao->indexCount), 1, 0, 0, 0);
         }
 
-        end(commandBuffers[i]);
+        vkCmdEndRenderPass(commandBuffers[i]);
+        VK_CHECK(
+            vkEndCommandBuffer(commandBuffers[i]),
+            "Failed to record command buffer."
+        );
     }
-}
-
-void CommandBuffer::end(const VkCommandBuffer& buffer)
-{
-    vkCmdEndRenderPass(buffer);
-    VK_CHECK(
-        vkEndCommandBuffer(buffer),
-        "Failed to record command buffer."
-    );
 }
 
 void CommandBuffer::freeCommandBuffers()
