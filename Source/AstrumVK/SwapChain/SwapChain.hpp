@@ -79,11 +79,14 @@ public:
     void destroyFramebuffers();
 
     void acquireImage();
+    void syncImagesInFlight();
     void submit(const std::vector<VkCommandBuffer>& commandBuffers);
     void present();
     
     const VkSurfaceFormatKHR& getSurfaceFormat() const;
     const VkExtent2D& getExtent() const;
+    uint32_t getImageIndex() const;
+    uint32_t getImageCount() const;
 };
 
 #endif

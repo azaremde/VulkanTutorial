@@ -100,7 +100,7 @@ void CommandBuffer::createVertexBuffer(VAO* vao, const std::vector<Vertex>& vert
 
 void CommandBuffer::createIndexBuffer(VAO* vao, const std::vector<uint32_t>& indices)
 {
-    vao->indexCount = indices.size();
+    vao->indexCount = static_cast<uint32_t>(indices.size());
 
     VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
@@ -188,6 +188,67 @@ void CommandBuffer::createCommandBuffers()
     );
 }
 
+void CommandBuffer::createDescriptorPool()
+{
+    VkDescriptorPoolSize poolSize{};
+    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    poolSize.descriptorCount = static_cast<uint32_t>(swapChain.getImageCount());
+
+    VkDescriptorPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.poolSizeCount = 1;
+    poolInfo.pPoolSizes = &poolSize;
+    poolInfo.maxSets = static_cast<uint32_t>(swapChain.getImageCount());
+    
+    VK_CHECK(
+        vkCreateDescriptorPool(gpu.getDevice(), &poolInfo, nullptr, &descriptorPool), 
+        "Failed to create descriptor pool."
+    );
+}
+
+void CommandBuffer::destroyDescriptorPool()
+{    
+    vkDestroyDescriptorPool(gpu.getDevice(), descriptorPool, nullptr);
+}
+
+void CommandBuffer::createDescriptorSets()
+{
+    std::vector<VkDescriptorSetLayout> layouts(swapChain.getImageCount(), pipeline.getDescriptorSetLayout());
+    VkDescriptorSetAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = descriptorPool;
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChain.getImageCount());
+    allocInfo.pSetLayouts = layouts.data();
+
+    descriptorSets.resize(swapChain.getImageCount());
+    if (vkAllocateDescriptorSets(gpu.getDevice(), &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate descriptor sets!");
+    }
+
+    for (size_t i = 0; i < swapChain.getImageCount(); i++) {
+        VkDescriptorBufferInfo bufferInfo{};
+        bufferInfo.buffer = uniformBuffers[i];
+        bufferInfo.offset = 0;
+        bufferInfo.range = sizeof(UniformBufferObject);
+
+        VkWriteDescriptorSet descriptorWrite{};
+        descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrite.dstSet = descriptorSets[i];
+        descriptorWrite.dstBinding = 0;
+        descriptorWrite.dstArrayElement = 0;
+        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        descriptorWrite.descriptorCount = 1;
+        descriptorWrite.pBufferInfo = &bufferInfo;
+
+        vkUpdateDescriptorSets(gpu.getDevice(), 1, &descriptorWrite, 0, nullptr);
+    }
+}
+
+void CommandBuffer::destroyDescriptorSets()
+{
+    
+}
+
 void CommandBuffer::render(
     const VkRenderPass& renderPass, 
     const std::vector<Framebuffer*>& swapChainFramebuffers, 
@@ -196,6 +257,7 @@ void CommandBuffer::render(
     const std::vector<VAO*>& vaos
 )
 {
+
     for (size_t i = 0; i < commandBuffers.size(); i++)
     {
         VkCommandBufferBeginInfo beginInfo{};
@@ -225,11 +287,25 @@ void CommandBuffer::render(
 
         VkDeviceSize offsets[] = {0};
 
-        for (const VAO* vao : vaos)
+        for (size_t j = 0; j < vaos.size(); j++)
         {            
-            vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &vao->buffer, offsets);
-            vkCmdBindIndexBuffer(commandBuffers[i], vao->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-            vkCmdDrawIndexed(commandBuffers[i], vao->indexCount, 1, 0, 0, 0);
+            vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &vaos[j]->buffer, offsets);
+            vkCmdBindIndexBuffer(commandBuffers[i], vaos[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+            uint32_t dynamicOffset = j * static_cast<uint32_t>(dynamicAlignment);
+
+            vkCmdBindDescriptorSets(
+                commandBuffers[i], 
+                VK_PIPELINE_BIND_POINT_GRAPHICS, 
+                pipeline.getPipelineLayout(), 
+                0, 
+                1, 
+                &descriptorSets[i], 
+                1, 
+                &dynamicOffset
+            );
+            
+            vkCmdDrawIndexed(commandBuffers[i], vaos[j]->indexCount, 1, 0, 0, 0);
         }
 
         vkCmdEndRenderPass(commandBuffers[i]);
@@ -250,8 +326,59 @@ void CommandBuffer::freeCommandBuffers()
     );
 }
 
-CommandBuffer::CommandBuffer(GPU& _gpu, SwapChain& _swapChain) : gpu { _gpu }, swapChain { _swapChain }
-{    
+void CommandBuffer::createUniformBuffers()
+{   
+    size_t deviceAlignment = gpu.minUniformBufferOffsetAlignment;
+    size_t uniformBufferSize = sizeof(glm::mat4x4);
+    dynamicAlignment = (uniformBufferSize / deviceAlignment) * deviceAlignment + ((uniformBufferSize % deviceAlignment) > 0 ? deviceAlignment : 0);
+
+    bSize = uniformBufferSize * 2 * dynamicAlignment;
+
+    // size_t minUboAlignment = gpu.minUniformBufferOffsetAlignment;
+    // dynamicAlignment = sizeof(glm::mat4);
+    // if (minUboAlignment > 0) {
+    //     dynamicAlignment = (dynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
+    // }
+
+    // bSize = 2 * dynamicAlignment;
+
+    uniformBuffers.resize(swapChain.getImageCount());
+    uniformBuffersMemory.resize(swapChain.getImageCount());
+
+    for (size_t i = 0; i < swapChain.getImageCount(); i++) {
+        createBuffer(
+            bSize, 
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+            uniformBuffers[i], 
+            uniformBuffersMemory[i]
+        );
+    }    
+}
+
+void CommandBuffer::destroyUniformBuffers()
+{
+    for (size_t i = 0; i < uniformBuffers.size(); i++)
+    {        
+        vkDestroyBuffer(gpu.getDevice(), uniformBuffers[i], nullptr);
+        vkFreeMemory(gpu.getDevice(), uniformBuffersMemory[i], nullptr);
+    }
+}
+
+void CommandBuffer::updateUniformBuffer(uint32_t imageIndex, UniformBufferObject* ubo, uint32_t size)
+{
+    void* data;
+    vkMapMemory(gpu.getDevice(), uniformBuffersMemory[imageIndex], 0, size, 0, &data);
+        memcpy(data, ubo, size);
+    vkUnmapMemory(gpu.getDevice(), uniformBuffersMemory[imageIndex]);
+}
+
+CommandBuffer::CommandBuffer(GPU& _gpu, SwapChain& _swapChain, Pipeline& _pipeline) : gpu { _gpu }, swapChain { _swapChain }, pipeline { _pipeline }
+{
+    createUniformBuffers();
+    createDescriptorPool();
+    createDescriptorSets();
+
     createCommandPool();
     createCommandBuffers();
 }
@@ -259,6 +386,10 @@ CommandBuffer::CommandBuffer(GPU& _gpu, SwapChain& _swapChain) : gpu { _gpu }, s
 CommandBuffer::~CommandBuffer()
 {
     destroyCommandPool();
+    
+    destroyDescriptorSets();
+    destroyDescriptorPool();
+    destroyUniformBuffers();
 }
 
 const VkCommandPool& CommandBuffer::getCommandPool() const

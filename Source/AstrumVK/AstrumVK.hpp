@@ -48,6 +48,9 @@ private:
     void createCommandBuffer();
     void destroyCommandBuffer();
 
+    UniformBufferObject ubo;
+    UniformBufferObject* ubos = new UniformBufferObject[2];
+
     std::vector<VAO*> renderList;
 
     Time time;

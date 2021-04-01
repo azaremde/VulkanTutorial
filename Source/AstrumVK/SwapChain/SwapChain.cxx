@@ -224,7 +224,10 @@ void SwapChain::acquireImage()
     vkResetFences(gpu.getDevice(), 1, &sync.inFlightFences[sync.currentFrame]);
 
     vkAcquireNextImageKHR(gpu.getDevice(), swapChain, UINT64_MAX, sync.imageAvailableSemaphores[sync.currentFrame], VK_NULL_HANDLE, &imageIndex);
+}
 
+void SwapChain::syncImagesInFlight()
+{
     // Check if a previous frame is using this image (i.e. there is its fence to wait on)
     if (sync.imagesInFlight[imageIndex] != VK_NULL_HANDLE) 
     {
@@ -322,4 +325,14 @@ const VkSurfaceFormatKHR& SwapChain::getSurfaceFormat() const
 const VkExtent2D& SwapChain::getExtent() const
 {
     return extent;
+}
+
+uint32_t SwapChain::getImageIndex() const
+{
+    return imageIndex;
+}
+
+uint32_t SwapChain::getImageCount() const
+{
+    return static_cast<uint32_t>(images.size());
 }

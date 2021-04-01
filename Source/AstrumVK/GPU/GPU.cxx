@@ -127,6 +127,11 @@ bool GPU::isDeviceSuitable(const VkPhysicalDevice& physDevice) {
         swapChainSupport = SwapChainSupportDetails::of(physDevice, surface.getSurface());
     }
 
+    VkPhysicalDeviceProperties props;
+    vkGetPhysicalDeviceProperties(physDevice, &props);
+
+    minUniformBufferOffsetAlignment = props.limits.minUniformBufferOffsetAlignment;
+
     return queues.familyIndices.isComplete() && swapChainSupport.isSupported() && extensionsSupported /* redundant */;
 }
 

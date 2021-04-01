@@ -18,6 +18,11 @@ private:
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
     void setShaderStages();
 
+    VkDescriptorSetLayout descriptorSetLayout;
+    VkDescriptorSetLayoutBinding uboLayoutBinding{};
+    void createDescriptorSetLayout();
+    void destroyDescriptorSetLayout();
+
     struct Fixed
     {
         VkVertexInputBindingDescription bindings;
@@ -82,6 +87,9 @@ public:
 
     Pipeline(GPU& _gpu, SwapChain& _swapChain, Shader& _shader);
     ~Pipeline();
+
+    const VkPipelineLayout& getPipelineLayout() const;
+    const VkDescriptorSetLayout& getDescriptorSetLayout() const;
 };
 
 #endif

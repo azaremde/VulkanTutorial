@@ -58,6 +58,8 @@ public:
     const VkDevice& getDevice() const;
     const QueueFamilyIndices& getQueueFamilyIndices() const;
     const SwapChainSupportDetails& getSwapChainSupportDetails() const;
+
+    VkDeviceSize minUniformBufferOffsetAlignment;
 };
 
 #endif

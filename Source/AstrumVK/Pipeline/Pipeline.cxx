@@ -24,6 +24,30 @@ void Pipeline::setShaderStages()
     DebugLogOut("[Graphics pipeline]: Shader stages loaded.");
 }
 
+void Pipeline::createDescriptorSetLayout()
+{    
+    uboLayoutBinding.binding = 0;
+    uboLayoutBinding.descriptorCount = 1;
+    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    uboLayoutBinding.pImmutableSamplers = nullptr;
+    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = 1;
+    layoutInfo.pBindings = &uboLayoutBinding;
+    
+    VK_CHECK(
+        vkCreateDescriptorSetLayout(gpu.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout),
+        "Failed to create descriptor set layout."
+    );
+}
+
+void Pipeline::destroyDescriptorSetLayout()
+{    
+    vkDestroyDescriptorSetLayout(gpu.getDevice(), descriptorSetLayout, nullptr);
+}
+
 void Pipeline::Fixed::setVertexInputInfo()
 {    
     bindings = Vertex::getBindingDescription();
@@ -77,8 +101,12 @@ void Pipeline::Fixed::setRasterizerState()
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
+
+    // rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+    // rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
     rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+
     rasterizer.depthBiasEnable = VK_FALSE;
     rasterizer.depthBiasConstantFactor = 0.0f; // Optional
     rasterizer.depthBiasClamp = 0.0f; // Optional
@@ -132,8 +160,10 @@ void Pipeline::createPipelineLayout()
 {    
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0; // Optional
-    pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
+
+    pipelineLayoutInfo.setLayoutCount = 1; // Optional
+    pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout; // Optional
+
     pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
     pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
@@ -195,6 +225,8 @@ void Pipeline::createGraphicsPipeline()
 {
     setShaderStages();
 
+    createDescriptorSetLayout();
+
     fixed.setVertexInputInfo();
     fixed.setInputAssemblyInfo();
     fixed.setViewportInfo(swapChain.getExtent());
@@ -213,6 +245,7 @@ void Pipeline::createGraphicsPipeline()
 
 void Pipeline::destroyGraphicsPipeline()
 {
+    destroyDescriptorSetLayout();
     destroyPipeline();
     destroyRenderPass();
     destroyPipelineLayout();
@@ -238,4 +271,14 @@ const VkPipeline& Pipeline::getPipeline() const
 const VkRenderPass& Pipeline::getRenderPass() const
 {
     return renderPass->getRenderPass();
+}
+
+const VkPipelineLayout& Pipeline::getPipelineLayout() const
+{
+    return pipelineLayout;
+}
+
+const VkDescriptorSetLayout& Pipeline::getDescriptorSetLayout() const
+{
+    return descriptorSetLayout;
 }
