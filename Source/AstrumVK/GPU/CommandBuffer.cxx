@@ -329,18 +329,10 @@ void CommandBuffer::freeCommandBuffers()
 void CommandBuffer::createUniformBuffers()
 {   
     size_t deviceAlignment = gpu.minUniformBufferOffsetAlignment;
-    size_t uniformBufferSize = sizeof(glm::mat4x4);
+    size_t uniformBufferSize = sizeof(UniformBufferObject);
     dynamicAlignment = (uniformBufferSize / deviceAlignment) * deviceAlignment + ((uniformBufferSize % deviceAlignment) > 0 ? deviceAlignment : 0);
 
     bSize = uniformBufferSize * 2 * dynamicAlignment;
-
-    // size_t minUboAlignment = gpu.minUniformBufferOffsetAlignment;
-    // dynamicAlignment = sizeof(glm::mat4);
-    // if (minUboAlignment > 0) {
-    //     dynamicAlignment = (dynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
-    // }
-
-    // bSize = 2 * dynamicAlignment;
 
     uniformBuffers.resize(swapChain.getImageCount());
     uniformBuffersMemory.resize(swapChain.getImageCount());

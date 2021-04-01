@@ -48,8 +48,8 @@ private:
     void createCommandBuffer();
     void destroyCommandBuffer();
 
-    UniformBufferObject ubo;
     UniformBufferObject* ubos = new UniformBufferObject[2];
+    UniformBufferObject* getUbo(uint32_t index);
 
     std::vector<VAO*> renderList;
 

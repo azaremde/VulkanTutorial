@@ -48,7 +48,6 @@ private:
     // Uniform buffers
 
 public:
-
     uint32_t dynamicAlignment { 0 };
     uint32_t bSize { 0 };
 
