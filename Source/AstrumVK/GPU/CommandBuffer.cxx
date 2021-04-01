@@ -192,7 +192,7 @@ void CommandBuffer::render(
             vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &vaos[j]->buffer, offsets);
             vkCmdBindIndexBuffer(commandBuffers[i], vaos[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-            uint32_t dynamicOffset = j * static_cast<uint32_t>(uniformBuffer.getDynamicAlignment());
+            uint32_t dynamicOffset = static_cast<uint32_t>(j) * uniformBuffer.getDynamicAlignment();
 
             vkCmdBindDescriptorSets(
                 commandBuffers[i], 
