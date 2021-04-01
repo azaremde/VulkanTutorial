@@ -11,6 +11,7 @@
 #include "AstrumVK/Models/VAO.hpp"
 #include "AstrumVK/Pipeline/Pipeline.hpp"
 #include "AstrumVK/UBO/UniformBufferObject.hpp"
+#include "AstrumVK/UBO/UniformBuffer.hpp"
 
 class CommandBuffer
 {
@@ -28,29 +29,9 @@ private:
     CommandBuffer(const CommandBuffer&) = delete;
     CommandBuffer& operator=(const CommandBuffer&) = delete;
 
-    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-
-    // Uniform buffers
-    std::vector<VkBuffer> uniformBuffers;
-    std::vector<VkDeviceMemory> uniformBuffersMemory;
-    void createUniformBuffers();
-    void destroyUniformBuffers();
-
-    VkDescriptorPool descriptorPool;
-    void createDescriptorPool();
-    void destroyDescriptorPool();
-
-    std::vector<VkDescriptorSet> descriptorSets;
-    void createDescriptorSets();
-    void destroyDescriptorSets();
-    // Uniform buffers
 
 public:
-    uint32_t dynamicAlignment { 0 };
-    uint32_t bSize { 0 };
-
     void createVertexBuffer(VAO* vao, const std::vector<Vertex>& vertices);
     void createIndexBuffer(VAO* vao, const std::vector<uint32_t>& indices);
 
@@ -59,6 +40,7 @@ public:
         const std::vector<Framebuffer*>& swapChainFramebuffers, 
         const VkExtent2D& extent, 
         const VkPipeline& graphicsPipeline,
+        const UniformBuffer& uniformBuffer,
         const std::vector<VAO*>& vaos
     );
 
@@ -67,8 +49,6 @@ public:
 
     const VkCommandPool& getCommandPool() const;
     const std::vector<VkCommandBuffer>& getCommandBuffers() const;
-
-    void updateUniformBuffer(uint32_t imageIndex, UniformBufferObject* ubo, uint32_t si);
 
     CommandBuffer(GPU& _gpu, SwapChain& _swapChain, Pipeline& _pipeline);
     ~CommandBuffer();

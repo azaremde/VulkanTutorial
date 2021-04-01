@@ -11,6 +11,7 @@
 #include "Pipeline/Pipeline.hpp"
 #include "Pipeline/Shaders/Shader.hpp"
 #include "GPU/CommandBuffer.hpp"
+#include "UBO/UniformBuffer.hpp"
 #include "Time.hpp"
 
 class AstrumVK : public IOnViewportResize
@@ -40,6 +41,10 @@ private:
     Pipeline* pipeline;
     void createPipeline();
     void destroyPipeline();
+
+    UniformBuffer* uniformBuffer;
+    void createUniformBuffer();
+    void destroyUniformBuffer();
 
     void createSwapChainFramebuffers();
     void destroySwapChainFramebuffers();

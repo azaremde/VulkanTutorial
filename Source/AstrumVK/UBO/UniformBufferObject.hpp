@@ -8,6 +8,8 @@
 struct UniformBufferObject
 {
     glm::mat4x4 model;
+    glm::mat4x4 view;
+    glm::mat4x4 proj;
 };
 
 #endif

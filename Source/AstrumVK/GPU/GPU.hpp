@@ -50,6 +50,9 @@ public:
     ~GPU();
 
     void recheckDeviceCapabilities();
+    
+    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
     const VkQueue& getGraphicsQueue() const;
     const VkQueue& getPresentQueue() const;
@@ -57,9 +60,11 @@ public:
     const VkPhysicalDevice& getPhysicalDevice() const;
     const VkDevice& getDevice() const;
     const QueueFamilyIndices& getQueueFamilyIndices() const;
-    const SwapChainSupportDetails& getSwapChainSupportDetails() const;
+    const SwapChainSupportDetails& getSwapChainSupportDetails() const;    
 
-    VkDeviceSize minUniformBufferOffsetAlignment;
+    struct {
+        VkDeviceSize minUniformBufferOffsetAlignment;
+    } limits;
 };
 
 #endif

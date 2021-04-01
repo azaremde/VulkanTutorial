@@ -129,6 +129,16 @@ void AstrumVK::destroyPipeline()
     delete defaultShader;
 }
 
+void AstrumVK::createUniformBuffer()
+{
+    uniformBuffer = new UniformBuffer(*gpu, *swapChain, *pipeline, 2);
+}
+
+void AstrumVK::destroyUniformBuffer()
+{
+    delete uniformBuffer;
+}
+
 void AstrumVK::createSwapChainFramebuffers()
 {
     swapChain->createFramebuffers(pipeline->getRenderPass());
@@ -159,6 +169,7 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
     createGPU();
     createSwapChain();
     createPipeline();
+    createUniformBuffer();
     createSwapChainFramebuffers();
     createCommandBuffer();
 
@@ -195,18 +206,21 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
         swapChain->getFramebuffers(),
         swapChain->getExtent(),
         pipeline->getPipeline(),
+        *uniformBuffer,
         renderList
     );
 
-    ubos = (UniformBufferObject*)alignedAlloc(commandBuffer->bSize, commandBuffer->dynamicAlignment);
+    ubos = (UniformBufferObject*)alignedAlloc(uniformBuffer->getBufferSize(), uniformBuffer->getDynamicAlignment());
 
     getUbo(0)->model = glm::mat4x4(1);
     getUbo(1)->model = glm::mat4x4(1);
+
+    getUbo(0)->proj = getUbo(1)->proj = glm::perspective(glm::radians(70.0f), 1920.0f / 1080.0f, 0.1f, 1000.0f);
 }
 
 UniformBufferObject* AstrumVK::getUbo(uint32_t index)
 {
-    return (UniformBufferObject*)(((uint64_t)ubos + (index * commandBuffer->dynamicAlignment)));
+    return (UniformBufferObject*)(((uint64_t)ubos + (index * uniformBuffer->getDynamicAlignment())));
 }
 
 AstrumVK::~AstrumVK()
@@ -219,6 +233,7 @@ AstrumVK::~AstrumVK()
 
     destroyCommandBuffer();
     destroySwapChainFramebuffers();
+    destroyUniformBuffer();
     destroyPipeline();
     destroySwapChain();
     destroyGPU();
@@ -236,9 +251,11 @@ void AstrumVK::drawFrame()
     t += time.getDeltaTime();
 
     getUbo(1)->model = glm::mat4x4(1);
+    getUbo(1)->model = glm::translate(getUbo(1)->model, glm::vec3(0, 0, -2));
     getUbo(1)->model = glm::rotate(getUbo(1)->model, glm::radians(t), glm::vec3(0, 0, 1));
 
     getUbo(0)->model = glm::mat4x4(1);
+    getUbo(0)->model = glm::translate(getUbo(0)->model, glm::vec3(0, 0, -2));
     getUbo(0)->model = glm::translate(getUbo(0)->model, glm::vec3(t * 0.01f, 0, 0));
 
     static float timer { 0.0f };
@@ -261,13 +278,14 @@ void AstrumVK::drawFrame()
             swapChain->getFramebuffers(),
             swapChain->getExtent(),
             pipeline->getPipeline(),
+            *uniformBuffer,
             renderList
         );
     }
 
     swapChain->acquireImage();
 
-    commandBuffer->updateUniformBuffer(swapChain->getImageIndex(), ubos, commandBuffer->dynamicAlignment * 2);
+    uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), ubos);
     swapChain->syncImagesInFlight();
     swapChain->submit(commandBuffer->getCommandBuffers());
     swapChain->present();
@@ -301,6 +319,7 @@ void AstrumVK::onViewportResize(unsigned int newWidth, unsigned int newHeight)
         swapChain->getFramebuffers(), 
         swapChain->getExtent(), 
         pipeline->getPipeline(), 
+        *uniformBuffer,
         renderList
     );
 }
