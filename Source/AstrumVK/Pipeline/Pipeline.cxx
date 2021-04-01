@@ -26,6 +26,7 @@ void Pipeline::setShaderStages()
 
 void Pipeline::createDescriptorSetLayout()
 {    
+    VkDescriptorSetLayoutBinding uboLayoutBinding{};
     uboLayoutBinding.binding = 0;
     uboLayoutBinding.descriptorCount = 1;
     uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;

@@ -19,7 +19,6 @@ private:
     void setShaderStages();
 
     VkDescriptorSetLayout descriptorSetLayout;
-    VkDescriptorSetLayoutBinding uboLayoutBinding{};
     void createDescriptorSetLayout();
     void destroyDescriptorSetLayout();
 
