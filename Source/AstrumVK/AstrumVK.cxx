@@ -145,8 +145,8 @@ void AstrumVK::createUniformBuffer()
         *gpu, 
         *swapChain, 
         *pipeline,
-        { dynamicLayout, staticLayout }, 
-        2
+        { dynamicLayout, staticLayout }
+        //, 2
     );
 }
 
@@ -226,7 +226,7 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
         renderList
     );
 
-    ubos = (DynamicUBO*)alignedAlloc(uniformBuffer->getBufferSize(), uniformBuffer->getDynamicAlignment());
+    ubos = (DynamicUBO*)alignedAlloc(uniformBuffer->layouts[0].bufferSize, uniformBuffer->layouts[0].dynamicAlignment);
 
     getUbo(0)->model = glm::mat4x4(1);
     getUbo(1)->model = glm::mat4x4(1);
@@ -239,7 +239,7 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
 
 DynamicUBO* AstrumVK::getUbo(uint32_t index)
 {
-    return (DynamicUBO*)(((uint64_t)ubos + (index * uniformBuffer->getDynamicAlignment())));
+    return (DynamicUBO*)(((uint64_t)ubos + (index * uniformBuffer->layouts[0].dynamicAlignment)));
 }
 
 AstrumVK::~AstrumVK()
@@ -305,7 +305,10 @@ void AstrumVK::drawFrame()
 
     swapChain->acquireImage();
 
-    uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), ubos, staticUbo);
+    // uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), ubos, staticUbo);
+    uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), 0, uniformBuffer->layouts[0].dynamicAlignment * uniformBuffer->layouts[0].instances, ubos);
+    uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), 1, sizeof(StaticUBO), &staticUbo);
+
     swapChain->syncImagesInFlight();
     swapChain->submit(commandBuffer->getCommandBuffers());
     swapChain->present();
