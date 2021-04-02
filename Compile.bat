@@ -1,3 +1,3 @@
-  C:/VulkanSDK/1.2.170.0/Bin/glslc.exe Shaders/DefaultShader.vert -o Shaders/DefaultShader.vert.spv
-C:/VulkanSDK/1.2.170.0/Bin/glslc.exe Shaders/DefaultShader.frag -o Shaders/DefaultShader.frag.spv
+  C:/VulkanSDK/1.2.170.0/Bin/glslc.exe Assets/Shaders/DefaultShader.vert -o Assets/Shaders/DefaultShader.vert.spv
+C:/VulkanSDK/1.2.170.0/Bin/glslc.exe Assets/Shaders/DefaultShader.frag -o Assets/Shaders/DefaultShader.frag.spv
 pause

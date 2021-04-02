@@ -13,6 +13,8 @@
 #include "AstrumVK/UBO/UniformBufferObject.hpp"
 #include "AstrumVK/UBO/UniformBuffer.hpp"
 
+#include "Models/Model.hpp"
+
 class CommandBuffer
 {
 private:
@@ -33,6 +35,7 @@ private:
 
 public:
     void createVertexBuffer(VAO* vao, const std::vector<Vertex>& vertices);
+    void createVertexBuffer(VAO* vao, const std::vector<Vert>& vertices);
     void createIndexBuffer(VAO* vao, const std::vector<uint32_t>& indices);
 
     void render(

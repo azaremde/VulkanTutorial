@@ -13,6 +13,8 @@ project(${projectName} VERSION ${projectVersion})
 
 add_subdirectory(${externalDirectory}/GLFW)
 add_subdirectory(${externalDirectory}/GLM)
+add_subdirectory(${externalDirectory}/Assimp)
+
 find_package(Vulkan REQUIRED FATAL_ERROR)
 
 file(GLOB projectSrc
@@ -34,14 +36,16 @@ target_include_directories(
     ${Vulkan_INCLUDE_DIR}
     ${externalDirectory}/GLM
     ${externalDirectory}/GLFW/include
+    ${externalDirectory}/Assimp/include
 )
 
 target_link_libraries(
     ${targetName} 
     glfw
+    assimp
     ${Vulkan_LIBRARIES}
 )
 
-file(COPY Shaders DESTINATION ${CMAKE_BINARY_DIR}/Debug)
-file(COPY Shaders DESTINATION ${CMAKE_BINARY_DIR}/Release)
-file(COPY Shaders DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY Assets DESTINATION ${CMAKE_BINARY_DIR}/Debug)
+file(COPY Assets DESTINATION ${CMAKE_BINARY_DIR}/Release)
+file(COPY Assets DESTINATION ${CMAKE_BINARY_DIR})

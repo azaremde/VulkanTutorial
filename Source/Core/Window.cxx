@@ -23,6 +23,9 @@ Window::Window(unsigned int _width, unsigned int _height, const std::string& _ti
 
 void Window::onViewportResize(int newWidth, int newHeight)
 {
+    width = newWidth;
+    height = newHeight;
+
     for (const auto& sub : onViewportResizeSubscribers)
     {
         sub->onViewportResize(newWidth, newHeight);

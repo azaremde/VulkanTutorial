@@ -2,6 +2,8 @@
 
 #include "Debug.hpp"
 
+#include "Models/Model.hpp"
+
 // Wrapper functions for aligned memory allocation
 // There is currently no standard for this in C++ that works across all platforms and vendors, so we abstract this
 void* alignedAlloc(size_t size, size_t alignment)
@@ -117,7 +119,7 @@ void AstrumVK::destroySwapChain()
 
 void AstrumVK::createPipeline()
 {
-    defaultShader = new Shader(*gpu, "Shaders/DefaultShader.vert.spv", "Shaders/DefaultShader.frag.spv");
+    defaultShader = new Shader(*gpu, "Assets/Shaders/DefaultShader.vert.spv", "Assets/Shaders/DefaultShader.frag.spv");
 
     pipeline = new Pipeline(*gpu, *swapChain, *defaultShader);
 }
@@ -190,28 +192,15 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
 
     VAO* vao1 = new VAO();
     VAO* vao2 = new VAO();
-    
-    commandBuffer->createVertexBuffer(vao1, {
-        {{-0.2f - 0.3f, -0.2f, -1.0f}, {1.0f, 0.0f, 0.0f}},
-        {{ 0.2f - 0.3f, -0.2f, -1.0f}, {0.0f, 1.0f, 0.0f}},
-        {{ 0.2f - 0.3f,  0.2f, -1.0f}, {0.0f, 0.0f, 1.0f}},
-        {{-0.2f - 0.3f,  0.2f, -1.0f}, {1.0f, 1.0f, 1.0f}}
-    });
 
-    commandBuffer->createIndexBuffer(vao1, std::vector<uint32_t> {
-        0, 1, 2, 2, 3, 0
-    });
-    
-    commandBuffer->createVertexBuffer(vao2, {
-        {{-0.2f + 0.3f, -0.5f, -1.0f}, {1.0f, 0.0f, 0.0f}},
-        {{ 0.2f + 0.3f, -0.5f, -1.0f}, {0.0f, 1.0f, 0.0f}},
-        {{ 0.2f + 0.3f,  0.5f, -1.0f}, {0.0f, 0.0f, 1.0f}},
-        {{-0.2f + 0.3f,  0.5f, -1.0f}, {1.0f, 1.0f, 1.0f}}
-    });
+    Model* cubeModel = loadModel("Assets/Models/cube.obj");
+    Model* sphereModel = loadModel("Assets/Models/base.fbx");
 
-    commandBuffer->createIndexBuffer(vao2, {
-        0, 1, 2, 2, 3, 0
-    });
+    commandBuffer->createVertexBuffer(vao1, cubeModel->vertices);
+    commandBuffer->createIndexBuffer(vao1, cubeModel->indices);
+
+    commandBuffer->createVertexBuffer(vao2, sphereModel->vertices);
+    commandBuffer->createIndexBuffer(vao2, sphereModel->indices);
     
     renderList.emplace_back(vao1);
     renderList.emplace_back(vao2);
@@ -230,11 +219,15 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
     getUbo(0)->model = glm::mat4x4(1);
     getUbo(1)->model = glm::mat4x4(1);
 
-    staticUbo.proj = glm::perspective(glm::radians(70.0f), 1920.0f / 1080.0f, 0.1f, 1000.0f);
+    staticUbo.proj = glm::perspective(
+        glm::radians(70.0f), 
+        static_cast<float>(window.getWidth()) / static_cast<float>(window.getHeight()),
+        0.1f, 
+        1000.0f);
 
     for (uint32_t i = 0; i < swapChain->getImageCount(); i++)
     {
-        uniformBuffer->updateUniformBuffer(i, 1, sizeof(StaticUBO), (void*)(&staticUbo));
+        uniformBuffer->updateUniformBuffer(i, 1, sizeof(StaticUBO), &staticUbo);
     }
 }
 
@@ -268,16 +261,22 @@ void AstrumVK::drawFrame()
 
     static float t { 0.0f };
 
-    t += time.getDeltaTime();
+    t += time.getDeltaTime() * 100.0f;
 
-    getUbo(1)->model = glm::mat4x4(1);
-    getUbo(1)->model = glm::translate(getUbo(1)->model, glm::vec3(0, 0, -2));
-    getUbo(1)->model = glm::rotate(getUbo(1)->model, glm::radians(80.0f), glm::vec3(1, 0, 0));
-    getUbo(1)->model = glm::rotate(getUbo(1)->model, glm::radians(t * 10.0f), glm::vec3(0, 0, 1));
+    glm::mat4x4& model_0 = getUbo(0)->model;
+    glm::mat4x4& model_1 = getUbo(1)->model;
 
-    getUbo(0)->model = glm::mat4x4(1);
-    getUbo(0)->model = glm::translate(getUbo(0)->model, glm::vec3(0, 0, -2));
-    getUbo(0)->model = glm::translate(getUbo(0)->model, glm::vec3(t * -0.1f, 0, 0));
+    model_0 = glm::mat4x4(1);
+    model_0 = glm::translate(model_0, glm::vec3(0, 0, -10));
+    model_0 = glm::rotate(model_0, glm::radians(t), glm::vec3(1, 0, 0));
+    model_0 = glm::rotate(model_0, glm::radians(t), glm::vec3(0, 1, 0));
+    model_0 = glm::rotate(model_0, glm::radians(t), glm::vec3(0, 0, 1));
+
+    model_1 = glm::mat4x4(1);
+    model_1 = glm::translate(model_1, glm::vec3(3, 0, -20));
+    model_1 = glm::rotate(model_1, glm::radians(-90.0f), glm::vec3(1, 0, 0));
+    model_1 = glm::rotate(model_1, glm::radians(t * 1.0f), glm::vec3(0, 0, 1));
+    model_1 = glm::scale(model_1, glm::vec3(0.01f));
 
     static float timer { 0.0f };
 
@@ -344,4 +343,15 @@ void AstrumVK::onViewportResize(unsigned int newWidth, unsigned int newHeight)
         *uniformBuffer,
         renderList
     );
+
+    staticUbo.proj = glm::perspective(
+        glm::radians(70.0f), 
+        static_cast<float>(window.getWidth()) / static_cast<float>(window.getHeight()),
+        0.1f, 
+        1000.0f);
+
+    for (uint32_t i = 0; i < swapChain->getImageCount(); i++)
+    {
+        uniformBuffer->updateUniformBuffer(i, 1, sizeof(StaticUBO), &staticUbo);
+    }
 }

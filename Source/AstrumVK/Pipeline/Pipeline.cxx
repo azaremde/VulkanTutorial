@@ -2,6 +2,8 @@
 
 #include "AstrumVK/Models/Vertex.hpp"
 
+#include "Models/Model.hpp"
+
 void Pipeline::setShaderStages()
 {
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
@@ -60,8 +62,11 @@ void Pipeline::destroyDescriptorSetLayout()
 
 void Pipeline::Fixed::setVertexInputInfo()
 {    
-    bindings = Vertex::getBindingDescription();
-    attributes = Vertex::getAttributeDescriptions();
+    // bindings = Vertex::getBindingDescription();
+    // attributes = Vertex::getAttributeDescriptions();
+
+    bindings = Vert::getBindingDescription();
+    attributes = Vert::getAttributeDescriptions();
 
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
