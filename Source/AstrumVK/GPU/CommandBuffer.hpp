@@ -33,10 +33,16 @@ private:
 
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
+    VkCommandBuffer beginSingleTimeCommands();
+    void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+
 public:
     void createVertexBuffer(VAO* vao, const std::vector<Vertex>& vertices);
     void createVertexBuffer(VAO* vao, const std::vector<Vert>& vertices);
     void createIndexBuffer(VAO* vao, const std::vector<uint32_t>& indices);
+
+    void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+    void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
     void render(
         const VkRenderPass& renderPass, 

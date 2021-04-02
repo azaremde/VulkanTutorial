@@ -12,6 +12,7 @@
 #include "Pipeline/Shaders/Shader.hpp"
 #include "GPU/CommandBuffer.hpp"
 #include "UBO/UniformBuffer.hpp"
+#include "Images/Image.hpp"
 #include "Time.hpp"
 
 class AstrumVK : public IOnViewportResize
@@ -52,6 +53,10 @@ private:
     CommandBuffer* commandBuffer;
     void createCommandBuffer();
     void destroyCommandBuffer();
+
+    Image* image;
+    void createImage();
+    void destroyImage();
 
     DynamicUBO* ubos = new DynamicUBO[2];
     DynamicUBO* getUbo(uint32_t index);

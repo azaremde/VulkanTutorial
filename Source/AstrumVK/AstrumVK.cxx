@@ -176,6 +176,16 @@ void AstrumVK::destroyCommandBuffer()
     delete commandBuffer;
 }
 
+void AstrumVK::createImage()
+{
+    image = new Image(*gpu, *commandBuffer);
+}
+
+void AstrumVK::destroyImage()
+{
+    delete image;
+}
+
 AstrumVK::AstrumVK(Window& _window) : window { _window }
 {
     window.addOnViewportResizeSubscriber(this);
@@ -348,7 +358,8 @@ void AstrumVK::onViewportResize(unsigned int newWidth, unsigned int newHeight)
         glm::radians(70.0f), 
         static_cast<float>(window.getWidth()) / static_cast<float>(window.getHeight()),
         0.1f, 
-        1000.0f);
+        1000.0f
+    );
 
     for (uint32_t i = 0; i < swapChain->getImageCount(); i++)
     {

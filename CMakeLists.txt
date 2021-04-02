@@ -14,6 +14,7 @@ project(${projectName} VERSION ${projectVersion})
 add_subdirectory(${externalDirectory}/GLFW)
 add_subdirectory(${externalDirectory}/GLM)
 add_subdirectory(${externalDirectory}/Assimp)
+add_subdirectory(${externalDirectory}/stb_image)
 
 find_package(Vulkan REQUIRED FATAL_ERROR)
 
@@ -37,12 +38,14 @@ target_include_directories(
     ${externalDirectory}/GLM
     ${externalDirectory}/GLFW/include
     ${externalDirectory}/Assimp/include
+    ${externalDirectory}/stb_image/include
 )
 
 target_link_libraries(
     ${targetName} 
     glfw
     assimp
+    stb_image
     ${Vulkan_LIBRARIES}
 )
 
