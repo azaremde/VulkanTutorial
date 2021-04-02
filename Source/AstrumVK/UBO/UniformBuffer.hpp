@@ -33,34 +33,15 @@ private:
     SwapChain& swapChain;
     Pipeline& pipeline;
 
-    // DynamicUBO* ubos;
-
-    // uint32_t instances;
-
-    // uint32_t dynamicAlignment;
-    // uint32_t bSize;
-
-    // std::vector<VkBuffer> dynamicUniformBuffers;
-    // std::vector<VkDeviceMemory> dynamicUniformBuffersMemory;
-
-    // std::vector<VkBuffer> staticUniformBuffers;
-    // std::vector<VkDeviceMemory> staticUniformBuffersMemory;
-    // void createUniformBuffers();
-    void _createUniformBuffers();
-    // void destroyUniformBuffers();
-    void _destroyUniformBuffers();
+    void createUniformBuffers();
+    void destroyUniformBuffers();
 
     VkDescriptorPool descriptorPool;
-    // void createDescriptorPool();
-    void _createDescriptorPool();
-    // void destroyDescriptorPool();
-    void _destroyDescriptorPool();
+    void createDescriptorPool();
+    void destroyDescriptorPool();
 
     std::vector<VkDescriptorSet> descriptorSets;
-    // void createDescriptorSets();
-    void _createDescriptorSets();
-    // void destroyDescriptorSets();
-    void _destroyDescriptorSets();
+    void allocateDescriptorSets();
 
     UniformBuffer(const UniformBuffer&) = delete;
     UniformBuffer& operator=(const UniformBuffer&) = delete;
@@ -68,13 +49,9 @@ private:
 public:
 
     std::vector<UniformLayout> layouts;
-    
+
     const std::vector<VkDescriptorSet>& getDescriptorSets() const;
-
-    // uint32_t getDynamicAlignment() const;
-    // uint32_t getBufferSize() const;
-
-    // void updateUniformBuffer(uint32_t imageIndex, DynamicUBO* ubo, StaticUBO& staticUbo);
+    
     void updateUniformBuffer(uint32_t imageIndex, uint32_t index, uint32_t size, void* data);
 
     UniformBuffer(
@@ -82,7 +59,6 @@ public:
         SwapChain& _swapChain, 
         Pipeline& _pipeline, 
         std::vector<UniformLayout> _layouts
-        // , uint32_t _instances
     );
     ~UniformBuffer();
 };
