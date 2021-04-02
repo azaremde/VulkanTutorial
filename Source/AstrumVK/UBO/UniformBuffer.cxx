@@ -1,17 +1,21 @@
 #include "UniformBuffer.hpp"
 
-// #include "AstrumVK/GPU/CommandBuffer.hpp"
-
 void UniformBuffer::createDescriptorPool()
 {
-    VkDescriptorPoolSize poolSize{};
-    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    poolSize.descriptorCount = static_cast<uint32_t>(swapChain.getImageCount());
+    VkDescriptorPoolSize dynamicPoolSize{};
+    dynamicPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    dynamicPoolSize.descriptorCount = static_cast<uint32_t>(swapChain.getImageCount());
+
+    VkDescriptorPoolSize staticPoolSize{};
+    staticPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    staticPoolSize.descriptorCount = static_cast<uint32_t>(swapChain.getImageCount());
+
+    std::vector<VkDescriptorPoolSize> poolSizes { dynamicPoolSize, staticPoolSize };
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.poolSizeCount = 1;
-    poolInfo.pPoolSizes = &poolSize;
+    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+    poolInfo.pPoolSizes = poolSizes.data();
     poolInfo.maxSets = static_cast<uint32_t>(swapChain.getImageCount());
     
     VK_CHECK(
@@ -39,22 +43,45 @@ void UniformBuffer::createDescriptorSets()
         throw std::runtime_error("failed to allocate descriptor sets!");
     }
 
-    for (size_t i = 0; i < swapChain.getImageCount(); i++) {
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = uniformBuffers[i];
-        bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(UniformBufferObject);
+    for (size_t i = 0; i < swapChain.getImageCount(); i++) 
+    {
+        VkDescriptorBufferInfo dynamicBufferInfo{};
+        dynamicBufferInfo.buffer = dynamicUniformBuffers[i];
+        dynamicBufferInfo.offset = 0;
+        dynamicBufferInfo.range = sizeof(DynamicUBO);
 
-        VkWriteDescriptorSet descriptorWrite{};
-        descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrite.dstSet = descriptorSets[i];
-        descriptorWrite.dstBinding = 0;
-        descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-        descriptorWrite.descriptorCount = 1;
-        descriptorWrite.pBufferInfo = &bufferInfo;
+        VkDescriptorBufferInfo staticBufferInfo{};
+        staticBufferInfo.buffer = staticUniformBuffers[i];
+        staticBufferInfo.offset = 0;
+        staticBufferInfo.range = sizeof(StaticUBO);
 
-        vkUpdateDescriptorSets(gpu.getDevice(), 1, &descriptorWrite, 0, nullptr);
+        VkWriteDescriptorSet dynamicDescriptorWrite{};
+        dynamicDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        dynamicDescriptorWrite.dstSet = descriptorSets[i];
+        dynamicDescriptorWrite.dstBinding = 0;
+        dynamicDescriptorWrite.dstArrayElement = 0;
+        dynamicDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        dynamicDescriptorWrite.descriptorCount = 1;
+        dynamicDescriptorWrite.pBufferInfo = &dynamicBufferInfo;
+
+        VkWriteDescriptorSet staticDescriptorWrite{};
+        staticDescriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        staticDescriptorWrite.dstSet = descriptorSets[i];
+        staticDescriptorWrite.dstBinding = 1;
+        staticDescriptorWrite.dstArrayElement = 0;
+        staticDescriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        staticDescriptorWrite.descriptorCount = 1;
+        staticDescriptorWrite.pBufferInfo = &staticBufferInfo;
+
+        std::vector<VkWriteDescriptorSet> writeDescriptorSets = { dynamicDescriptorWrite, staticDescriptorWrite };
+
+        vkUpdateDescriptorSets(
+            gpu.getDevice(), 
+            static_cast<uint32_t>(writeDescriptorSets.size()), 
+            writeDescriptorSets.data(), 
+            0, 
+            nullptr
+        );
     }
 }
 
@@ -64,46 +91,77 @@ void UniformBuffer::destroyDescriptorSets()
 
 void UniformBuffer::createUniformBuffers()
 {   
-    size_t deviceAlignment = gpu.limits.minUniformBufferOffsetAlignment;
-    size_t uniformBufferSize = sizeof(UniformBufferObject);    
+    uint32_t deviceAlignment = static_cast<uint32_t>(gpu.limits.minUniformBufferOffsetAlignment);
+    uint32_t uniformBufferSize = sizeof(DynamicUBO);    
     
     dynamicAlignment = (uniformBufferSize / deviceAlignment) * deviceAlignment + ((uniformBufferSize % deviceAlignment) > 0 ? deviceAlignment : 0);
     bSize = uniformBufferSize * instances * dynamicAlignment;
 
-    uniformBuffers.resize(swapChain.getImageCount());
-    uniformBuffersMemory.resize(swapChain.getImageCount());
+    dynamicUniformBuffers.resize(swapChain.getImageCount());
+    dynamicUniformBuffersMemory.resize(swapChain.getImageCount());
 
     for (size_t i = 0; i < swapChain.getImageCount(); i++) {
         gpu.createBuffer(
             bSize, 
             VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-            uniformBuffers[i], 
-            uniformBuffersMemory[i]
+            dynamicUniformBuffers[i], 
+            dynamicUniformBuffersMemory[i]
         );
-    }    
+    }
+
+    staticUniformBuffers.resize(swapChain.getImageCount());
+    staticUniformBuffersMemory.resize(swapChain.getImageCount());
+
+    for (size_t i = 0; i < swapChain.getImageCount(); i++) {
+        gpu.createBuffer(
+            sizeof(StaticUBO), 
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+            staticUniformBuffers[i], 
+            staticUniformBuffersMemory[i]
+        );
+    }
 }
 
 void UniformBuffer::destroyUniformBuffers()
 {
-    for (size_t i = 0; i < uniformBuffers.size(); i++)
+    for (size_t i = 0; i < dynamicUniformBuffers.size(); i++)
     {        
-        vkDestroyBuffer(gpu.getDevice(), uniformBuffers[i], nullptr);
-        vkFreeMemory(gpu.getDevice(), uniformBuffersMemory[i], nullptr);
+        vkDestroyBuffer(gpu.getDevice(), dynamicUniformBuffers[i], nullptr);
+        vkFreeMemory(gpu.getDevice(), dynamicUniformBuffersMemory[i], nullptr);
+        vkDestroyBuffer(gpu.getDevice(), staticUniformBuffers[i], nullptr);
+        vkFreeMemory(gpu.getDevice(), staticUniformBuffersMemory[i], nullptr);
     }
 }
 
-void UniformBuffer::updateUniformBuffer(uint32_t imageIndex, UniformBufferObject* ubo)
+void UniformBuffer::updateUniformBuffer(uint32_t imageIndex, DynamicUBO* ubo, StaticUBO& staticUbo)
 {
     uint32_t size = dynamicAlignment * instances;
 
     void* data;
-    vkMapMemory(gpu.getDevice(), uniformBuffersMemory[imageIndex], 0, size, 0, &data);
+    vkMapMemory(gpu.getDevice(), dynamicUniformBuffersMemory[imageIndex], 0, size, 0, &data);
         memcpy(data, ubo, size);
-    vkUnmapMemory(gpu.getDevice(), uniformBuffersMemory[imageIndex]);
+    vkUnmapMemory(gpu.getDevice(), dynamicUniformBuffersMemory[imageIndex]);
+
+    void* staticUboData;
+    vkMapMemory(gpu.getDevice(), staticUniformBuffersMemory[imageIndex], 0, sizeof(staticUbo), 0, &staticUboData);
+        memcpy(staticUboData, &staticUbo, sizeof(staticUbo));
+    vkUnmapMemory(gpu.getDevice(), staticUniformBuffersMemory[imageIndex]);
 }
 
-UniformBuffer::UniformBuffer(GPU& _gpu, SwapChain& _swapChain, Pipeline& _pipeline, uint32_t _instances) : gpu { _gpu }, swapChain { _swapChain }, pipeline { _pipeline }, instances { _instances }
+UniformBuffer::UniformBuffer(
+    GPU& _gpu, 
+    SwapChain& _swapChain, 
+    Pipeline& _pipeline, 
+    std::vector<UniformLayout> _layouts, 
+    uint32_t _instances
+) : 
+    gpu { _gpu }, 
+    swapChain { _swapChain }, 
+    pipeline { _pipeline }, 
+    layouts { _layouts }, 
+    instances { _instances }
 {
     createUniformBuffers();
     createDescriptorPool();

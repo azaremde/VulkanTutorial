@@ -5,9 +5,13 @@
 
 #include "Pch.hpp"
 
-struct UniformBufferObject
+struct DynamicUBO
 {
     glm::mat4x4 model;
+};
+
+struct StaticUBO
+{
     glm::mat4x4 view;
     glm::mat4x4 proj;
 };

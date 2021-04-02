@@ -53,8 +53,10 @@ private:
     void createCommandBuffer();
     void destroyCommandBuffer();
 
-    UniformBufferObject* ubos = new UniformBufferObject[2];
-    UniformBufferObject* getUbo(uint32_t index);
+    DynamicUBO* ubos = new DynamicUBO[2];
+    DynamicUBO* getUbo(uint32_t index);
+
+    StaticUBO staticUbo;
 
     std::vector<VAO*> renderList;
 

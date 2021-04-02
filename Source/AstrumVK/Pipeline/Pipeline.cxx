@@ -26,14 +26,21 @@ void Pipeline::setShaderStages()
 
 void Pipeline::createDescriptorSetLayout()
 {    
-    VkDescriptorSetLayoutBinding uboLayoutBinding{};
-    uboLayoutBinding.binding = 0;
-    uboLayoutBinding.descriptorCount = 1;
-    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    uboLayoutBinding.pImmutableSamplers = nullptr;
-    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    VkDescriptorSetLayoutBinding dynamicBinding0{};
+    dynamicBinding0.binding = 0;
+    dynamicBinding0.descriptorCount = 1;
+    dynamicBinding0.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    dynamicBinding0.pImmutableSamplers = nullptr;
+    dynamicBinding0.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-    std::vector<VkDescriptorSetLayoutBinding> bindings = { uboLayoutBinding };
+    VkDescriptorSetLayoutBinding staticBinding1{};
+    staticBinding1.binding = 1;
+    staticBinding1.descriptorCount = 1;
+    staticBinding1.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    staticBinding1.pImmutableSamplers = nullptr;
+    staticBinding1.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    std::vector<VkDescriptorSetLayoutBinding> bindings = { dynamicBinding0, staticBinding1 };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
