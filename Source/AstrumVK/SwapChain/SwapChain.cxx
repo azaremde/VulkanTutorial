@@ -18,7 +18,7 @@ void SwapChain::choosePresentationMode(const std::vector<VkPresentModeKHR> &avai
 
     // Todo: Make it depend on a parameter.
 
-    #define SWAP_CHAIN_FORCE_SPEED
+    // #define SWAP_CHAIN_FORCE_SPEED
 
 #ifdef SWAP_CHAIN_FORCE_SPEED
     for (const auto &availablePresentMode : availablePresentModes)

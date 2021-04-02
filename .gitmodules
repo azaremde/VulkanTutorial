@@ -4,3 +4,6 @@
 [submodule "External/GLM"]
 	path = External/GLM
 	url = https://github.com/g-truc/glm
+[submodule "External/Assimp"]
+	path = External/Assimp
+	url = https://github.com/assimp/assimp
