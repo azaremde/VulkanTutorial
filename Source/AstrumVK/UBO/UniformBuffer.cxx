@@ -7,7 +7,8 @@ void UniformBuffer::createDescriptorPool()
     for (size_t i = 0; i < layouts.size(); i++)
     {
         VkDescriptorPoolSize poolSize{};
-        poolSize.type = layouts[i].instances > 0 ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        // poolSize.type = layouts[i].instances > 0 ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSize.type = layouts[i].type;
         poolSize.descriptorCount = static_cast<uint32_t>(swapChain.getImageCount());
 
         poolSizes.emplace_back(poolSize);
@@ -50,6 +51,7 @@ void UniformBuffer::allocateDescriptorSets()
     {
         std::vector<VkWriteDescriptorSet> writeDescriptorSets;
         std::vector<VkDescriptorBufferInfo> bufferInfos;
+        std::vector<VkDescriptorImageInfo> imageInfos;
         bufferInfos.resize(layouts.size());
 
         for (size_t j = 0; j < layouts.size(); j++)
@@ -60,16 +62,39 @@ void UniformBuffer::allocateDescriptorSets()
             bufferInfo.range = layouts[j].size;
             bufferInfos[j] = bufferInfo;
 
-            VkWriteDescriptorSet descriptorWrite{};
-            descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrite.dstSet = descriptorSets[i];
-            descriptorWrite.dstBinding = layouts[j].binding;
-            descriptorWrite.dstArrayElement = 0;
-            descriptorWrite.descriptorType = layouts[j].instances > 0 ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            descriptorWrite.descriptorCount = 1;
-            descriptorWrite.pBufferInfo = &bufferInfos[j];
+            if (layouts[j].type != VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+            {
 
-            writeDescriptorSets.emplace_back(descriptorWrite);
+                VkWriteDescriptorSet descriptorWrite{};
+                descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrite.dstSet = descriptorSets[i];
+                descriptorWrite.dstBinding = layouts[j].binding;
+                descriptorWrite.dstArrayElement = 0;
+                descriptorWrite.descriptorType = layouts[j].instances > 0 ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                descriptorWrite.descriptorCount = 1;
+                descriptorWrite.pBufferInfo = &bufferInfos[j];
+
+                writeDescriptorSets.emplace_back(descriptorWrite);
+            }
+            else
+            {
+                VkDescriptorImageInfo imageInfo{};
+                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageInfo.imageView = layouts[j].imageView;
+                imageInfo.sampler = layouts[j].sampler;
+                imageInfos.emplace_back(imageInfo);
+
+                VkWriteDescriptorSet descriptorWrite{};
+                descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrite.dstSet = descriptorSets[i];
+                descriptorWrite.dstBinding = layouts[j].binding;
+                descriptorWrite.dstArrayElement = 0;
+                descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                descriptorWrite.descriptorCount = static_cast<uint32_t>(imageInfos.size());
+                descriptorWrite.pImageInfo = imageInfos.data();
+
+                writeDescriptorSets.emplace_back(descriptorWrite);
+            }
         }
 
         vkUpdateDescriptorSets(

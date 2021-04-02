@@ -135,19 +135,28 @@ void AstrumVK::createUniformBuffer()
 {
     UniformLayout dynamicLayout{};
     UniformLayout staticLayout{};
+    UniformLayout imageLayout{};
 
+    dynamicLayout.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     dynamicLayout.binding = 0;
     dynamicLayout.size = sizeof(DynamicUBO);
     dynamicLayout.instances = 2;
 
+    staticLayout.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     staticLayout.binding = 1;
     staticLayout.size = sizeof(StaticUBO);
+
+    imageLayout.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    imageLayout.binding = 2;
+    imageLayout.size = sizeof(StaticUBO);
+    imageLayout.imageView = image->getImageView();
+    imageLayout.sampler = image->getSampler();
 
     uniformBuffer = new UniformBuffer(
         *gpu, 
         *swapChain, 
         *pipeline,
-        { dynamicLayout, staticLayout }
+        { dynamicLayout, staticLayout, imageLayout }
     );
 }
 
@@ -196,9 +205,10 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
     createGPU();
     createSwapChain();
     createPipeline();
-    createUniformBuffer();
     createSwapChainFramebuffers();
     createCommandBuffer();
+    createImage();
+    createUniformBuffer();
 
     VAO* vao1 = new VAO();
     VAO* vao2 = new VAO();
@@ -254,9 +264,10 @@ AstrumVK::~AstrumVK()
         delete vao;
     }
 
+    destroyUniformBuffer();
+    destroyImage();
     destroyCommandBuffer();
     destroySwapChainFramebuffers();
-    destroyUniformBuffer();
     destroyPipeline();
     destroySwapChain();
     destroyGPU();

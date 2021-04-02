@@ -12,7 +12,9 @@
 #include "UniformBufferObject.hpp"
 
 struct UniformLayout
-{    
+{   
+    VkDescriptorType type; 
+
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     
@@ -24,6 +26,9 @@ struct UniformLayout
     uint32_t bufferSize { 0 };
 
     bool dynamic { false };     // Reserved for future use.
+
+    VkImageView imageView;
+    VkSampler sampler;
 };
 
 class UniformBuffer

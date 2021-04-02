@@ -34,6 +34,16 @@ private:
     Image& operator=(const Image&) = delete;
 
 public:
+    VkImageView getImageView()
+    {
+        return textureImageView;
+    }
+
+    VkSampler getSampler()
+    {
+        return textureSampler;
+    }
+
     Image(GPU& _gpu, CommandBuffer& _commandBuffer);
     ~Image();
 };

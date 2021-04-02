@@ -28,6 +28,7 @@ void Pipeline::setShaderStages()
 
 void Pipeline::createDescriptorSetLayout()
 {    
+    // Todo: DO SOMETHING WITH THIS!!
     VkDescriptorSetLayoutBinding dynamicBinding0{};
     dynamicBinding0.binding = 0;
     dynamicBinding0.descriptorCount = 1;
@@ -41,8 +42,15 @@ void Pipeline::createDescriptorSetLayout()
     staticBinding1.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     staticBinding1.pImmutableSamplers = nullptr;
     staticBinding1.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    
+    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+    samplerLayoutBinding.binding = 2;
+    samplerLayoutBinding.descriptorCount = 1;
+    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    samplerLayoutBinding.pImmutableSamplers = nullptr;
+    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    std::vector<VkDescriptorSetLayoutBinding> bindings = { dynamicBinding0, staticBinding1 };
+    std::vector<VkDescriptorSetLayoutBinding> bindings = { dynamicBinding0, staticBinding1, samplerLayoutBinding };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
