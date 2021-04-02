@@ -7,3 +7,6 @@
 [submodule "External/Assimp"]
 	path = External/Assimp
 	url = https://github.com/assimp/assimp
+[submodule "External/stb_image"]
+	path = External/stb_image
+	url = https://github.com/azaremde/stb
