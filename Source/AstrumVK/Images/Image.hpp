@@ -16,9 +16,16 @@ private:
 
     VkImage textureImage;
     VkDeviceMemory textureImageMemory;
-
     void createTextureImage();
     void destroyTextureImage();
+
+    VkImageView textureImageView;
+    void createTextureImageView();
+    void destroyTextureImageView();
+
+    VkSampler textureSampler;
+    void createTextureSampler();
+    void destroyTextureSampler();
     
     GPU& gpu;
     CommandBuffer& commandBuffer;

@@ -54,6 +54,9 @@ public:
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 
+    // Todo: move into a helper class specially for this.
+    VkImageView createImageView(VkImage image, VkFormat format);
+
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
     const VkQueue& getGraphicsQueue() const;
@@ -63,6 +66,8 @@ public:
     const VkDevice& getDevice() const;
     const QueueFamilyIndices& getQueueFamilyIndices() const;
     const SwapChainSupportDetails& getSwapChainSupportDetails() const;    
+
+    VkPhysicalDeviceProperties props;
 
     struct {
         VkDeviceSize minUniformBufferOffsetAlignment;
