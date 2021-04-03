@@ -14,7 +14,7 @@
 #include "AstrumVK/Models/Entity.hpp"
 
 struct UniformLayout
-{   
+{
     VkDescriptorType type; 
 
     std::vector<VkBuffer> uniformBuffers;
