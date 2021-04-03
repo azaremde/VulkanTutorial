@@ -7,10 +7,8 @@ void UniformBuffer::createDescriptorPool()
     for (size_t i = 0; i < layouts.size(); i++)
     {
         VkDescriptorPoolSize poolSize{};
-        // poolSize.type = layouts[i].instances > 0 ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         poolSize.type = layouts[i].type;
         poolSize.descriptorCount = static_cast<uint32_t>(swapChain.getImageCount());
-
         poolSizes.emplace_back(poolSize);
     }
 
@@ -33,12 +31,12 @@ void UniformBuffer::destroyDescriptorPool()
 
 void UniformBuffer::allocateDescriptorSets()
 {
-    std::vector<VkDescriptorSetLayout> ls(swapChain.getImageCount(), pipeline.getDescriptorSetLayout());
+    std::vector<VkDescriptorSetLayout> setLayouts(swapChain.getImageCount(), pipeline.getDescriptorSetLayout());
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = descriptorPool;
     allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChain.getImageCount());
-    allocInfo.pSetLayouts = ls.data();
+    allocInfo.pSetLayouts = setLayouts.data();
 
     descriptorSets.resize(swapChain.getImageCount());
 
