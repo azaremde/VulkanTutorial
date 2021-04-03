@@ -148,21 +148,11 @@ void UniformBuffer::destroyUniformBuffers()
 }
 
 void UniformBuffer::updateUniformBuffer(uint32_t imageIndex, uint32_t i, uint32_t size, void* d)
-{
-    if (layouts[i].instances > 0)
-    {        
-        void* data;
-        vkMapMemory(gpu.getDevice(), layouts[i].uniformBuffersMemory[imageIndex], 0, size, 0, &data);
-            memcpy(data, d, size);
-        vkUnmapMemory(gpu.getDevice(), layouts[i].uniformBuffersMemory[imageIndex]);
-    }
-    else
-    {
-        void* staticUboData;
-        vkMapMemory(gpu.getDevice(), layouts[i].uniformBuffersMemory[imageIndex], 0, size, 0, &staticUboData);
-            memcpy(staticUboData, d, size);
-        vkUnmapMemory(gpu.getDevice(), layouts[i].uniformBuffersMemory[imageIndex]);
-    }
+{    
+    void* data;
+    vkMapMemory(gpu.getDevice(), layouts[i].uniformBuffersMemory[imageIndex], 0, size, 0, &data);
+        memcpy(data, d, size);
+    vkUnmapMemory(gpu.getDevice(), layouts[i].uniformBuffersMemory[imageIndex]);
 }
 
 UniformBuffer::UniformBuffer(
