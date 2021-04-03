@@ -12,7 +12,9 @@
 #include "Pipeline/Shaders/Shader.hpp"
 #include "GPU/CommandBuffer.hpp"
 #include "UBO/UniformBuffer.hpp"
-#include "Images/Image.hpp"
+#include "UBO/Predefined/StaticUBO.hpp"
+#include "UBO/Predefined/DynamicUBO.hpp"
+#include "Textures/Texture2D.hpp"
 #include "Time.hpp"
 
 class AstrumVK : public IOnViewportResize

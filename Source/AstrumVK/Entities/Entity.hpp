@@ -6,7 +6,7 @@
 #include "Pch.hpp"
 
 #include "AstrumVK/GPU/GPU.hpp"
-#include "AstrumVK/UBO/UniformBufferObject.hpp"
+#include "AstrumVK/UBO/Predefined/DynamicUBO.hpp"
 
 class Texture2D;
 

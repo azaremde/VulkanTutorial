@@ -9,8 +9,8 @@
 #include "AstrumVK/SwapChain/SwapChain.hpp"
 #include "AstrumVK/Entities/Entity.hpp"
 #include "AstrumVK/Pipeline/Pipeline.hpp"
-#include "AstrumVK/UBO/UniformBufferObject.hpp"
 #include "AstrumVK/UBO/UniformBuffer.hpp"
+#include "AstrumVK/Pipeline/InputAssemblyLayouts/Vertex.hpp"
 
 #include "Assets/MeshAsset.hpp"
 
@@ -37,7 +37,7 @@ private:
 public:
 
     // Todo: Move it somewhere
-    void createVertexBuffer(Entity* vao, const std::vector<Vert>& vertices);
+    void createVertexBuffer(Entity* vao, const std::vector<Vertex>& vertices);
     void createIndexBuffer(Entity* vao, const std::vector<uint32_t>& indices);
 
     // Todo: Move it somewhere

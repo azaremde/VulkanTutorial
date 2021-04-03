@@ -2,8 +2,8 @@
 
 #include "Debug.hpp"
 
-#include "Assets/MeshAsset.hpp"
 #include "Assets/ImageAsset.hpp"
+#include "Assets/MeshAsset.hpp"
 
 // Wrapper functions for aligned memory allocation
 // There is currently no standard for this in C++ that works across all platforms and vendors, so we abstract this
@@ -108,7 +108,7 @@ void AstrumVK::destroyGPU()
 
 void AstrumVK::createSwapChain()
 {
-    swapChain = new SwapChain(window, true);
+    swapChain = new SwapChain(window, false);
 }
 
 void AstrumVK::destroySwapChain()

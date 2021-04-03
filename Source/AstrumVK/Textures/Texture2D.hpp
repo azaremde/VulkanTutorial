@@ -1,5 +1,5 @@
-#ifndef __AstrumVK_Images_Image_hpp__
-#define __AstrumVK_Images_Image_hpp__
+#ifndef __AstrumVK_Textures_Texture2D_hpp__
+#define __AstrumVK_Textures_Texture2D_hpp__
 
 #pragma once
 

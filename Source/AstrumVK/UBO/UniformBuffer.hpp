@@ -9,8 +9,6 @@
 #include "AstrumVK/SwapChain/SwapChain.hpp"
 #include "AstrumVK/Pipeline/Pipeline.hpp"
 
-#include "UniformBufferObject.hpp"
-
 #include "AstrumVK/Entities/Entity.hpp"
 
 struct UniformLayout

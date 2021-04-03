@@ -1,6 +1,6 @@
 #include "Entity.hpp"
 
-#include "AstrumVK/Images/Image.hpp"
+#include "AstrumVK/Textures/Texture2D.hpp"
 
 void Entity::destroy()
 {    

@@ -130,7 +130,7 @@ void CommandBuffer::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t w
     endSingleTimeCommands(commandBuffer);
 }
 
-void CommandBuffer::createVertexBuffer(Entity* vao, const std::vector<Vert>& vertices)
+void CommandBuffer::createVertexBuffer(Entity* vao, const std::vector<Vertex>& vertices)
 {
     vao->vertexCount = static_cast<uint32_t>(vertices.size());
     

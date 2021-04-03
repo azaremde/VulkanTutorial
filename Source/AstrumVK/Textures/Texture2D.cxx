@@ -1,13 +1,7 @@
-#include "Image.hpp"
-
-#include <stb_image/stb_image.h>
+#include "Texture2D.hpp"
 
 void Texture2D::createTextureImage(ImageAsset* imageAsset)
 {
-    // int texWidth, texHeight, texChannels;
-    // stbi_uc* pixels = stbi_load(filename.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-
-
     VkDeviceSize imageSize = imageAsset->texWidth * imageAsset->texHeight * 4;
 
     if (!imageAsset->pixels) 
