@@ -237,13 +237,15 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
 
     ubos = (DynamicUBO*)alignedAlloc(uniformBuffer->layouts[0].bufferSize, uniformBuffer->layouts[0].dynamicAlignment);
 
-    glm::mat4x4& model_0 = getUbo(0)->model;
-    glm::mat4x4& model_1 = getUbo(1)->model;
-    glm::mat4x4& model_2 = getUbo(2)->model;
+    for (int i = 0; i < renderList.size(); i++)
+    {
+        renderList[i]->ubo = getUbo(i);
+    }
 
-    model_0 = glm::mat4x4(1);
-    model_1 = glm::mat4x4(1);
-    model_2 = glm::mat4x4(1);
+    for (int i = 0; i < renderList.size(); i++)
+    {
+        renderList[i]->ubo->model = glm::mat4x4(1);
+    }
 
     staticUbo.proj = glm::perspective(
         glm::radians(70.0f), 
@@ -289,9 +291,9 @@ void AstrumVK::drawFrame()
 
     theta += time.getDeltaTime() * 100.0f;
 
-    glm::mat4x4& model_0 = getUbo(0)->model;
-    glm::mat4x4& model_1 = getUbo(1)->model;
-    glm::mat4x4& model_2 = getUbo(2)->model;
+    glm::mat4x4& model_0 = renderList[0]->ubo->model;
+    glm::mat4x4& model_1 = renderList[1]->ubo->model;
+    glm::mat4x4& model_2 = renderList[2]->ubo->model;
 
     model_0 = glm::mat4x4(1);
     model_0 = glm::translate(model_0, glm::vec3(1, 0, -10));

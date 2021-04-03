@@ -6,12 +6,15 @@
 #include "Pch.hpp"
 
 #include "AstrumVK/GPU/GPU.hpp"
+#include "AstrumVK/UBO/UniformBufferObject.hpp"
 
 class Texture2D;
 
 class Entity
 {
 public:
+    DynamicUBO* ubo;
+
     VkBuffer buffer;
     VkDeviceMemory memory;
 
