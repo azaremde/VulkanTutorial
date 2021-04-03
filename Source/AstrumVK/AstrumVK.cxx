@@ -108,7 +108,7 @@ void AstrumVK::destroyGPU()
 
 void AstrumVK::createSwapChain()
 {
-    swapChain = new SwapChain(*gpu, *surface, window);
+    swapChain = new SwapChain(*gpu, *surface, window, true);
 }
 
 void AstrumVK::destroySwapChain()
