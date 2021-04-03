@@ -98,17 +98,19 @@ void AstrumVK::destroySurface()
 
 void AstrumVK::createGPU()
 {
-    gpu = new GPU(instance, *surface);
+    // gpu = new GPU(instance, *surface);
+    GPU::create(&instance, surface);
 }
 
 void AstrumVK::destroyGPU()
 {
-    delete gpu;
+    // delete gpu;
+    GPU::destroy();
 }
 
 void AstrumVK::createSwapChain()
 {
-    swapChain = new SwapChain(*gpu, *surface, window, true);
+    swapChain = new SwapChain(*surface, window, true);
 }
 
 void AstrumVK::destroySwapChain()
@@ -118,9 +120,9 @@ void AstrumVK::destroySwapChain()
 
 void AstrumVK::createPipeline()
 {
-    defaultShader = new Shader(*gpu, "Assets/Shaders/DefaultShader.vert.spv", "Assets/Shaders/DefaultShader.frag.spv");
+    defaultShader = new Shader("Assets/Shaders/DefaultShader.vert.spv", "Assets/Shaders/DefaultShader.frag.spv");
 
-    pipeline = new Pipeline(*gpu, *swapChain, *defaultShader);
+    pipeline = new Pipeline(*swapChain, *defaultShader);
 }
 
 void AstrumVK::destroyPipeline()
@@ -154,7 +156,7 @@ void AstrumVK::createModels(const std::vector<ModelDescriptor>& models)
         MeshAsset* model = loadModelAsset(models[i].modelFilename);
         ImageAsset* image = loadImageAsset(models[i].textureFilename);
 
-        Texture2D* img = new Texture2D(*gpu, *commandBuffer, image);
+        Texture2D* img = new Texture2D(*commandBuffer, image);
 
         Entity* entity = new Entity();
         commandBuffer->createVertexBuffer(entity, model->vertices);
@@ -171,7 +173,6 @@ void AstrumVK::createModels(const std::vector<ModelDescriptor>& models)
     }
 
     uniformBuffer = new UniformBuffer(
-        *gpu,
         *swapChain, 
         *pipeline,
         { dynamicLayout, staticLayout, imageLayout },
@@ -196,7 +197,7 @@ void AstrumVK::destroySwapChainFramebuffers()
 
 void AstrumVK::createCommandBuffer()
 {
-    commandBuffer = new CommandBuffer(*gpu, *swapChain, *pipeline);
+    commandBuffer = new CommandBuffer(*swapChain, *pipeline);
 }
 
 void AstrumVK::destroyCommandBuffer()
@@ -213,7 +214,7 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
     createSurface();
     createGPU();
 
-    window.setTitle(gpu->about.name);
+    window.setTitle(GPU::about.name);
 
     createSwapChain();
     createPipeline();
@@ -268,7 +269,7 @@ AstrumVK::~AstrumVK()
 {
     for (auto& vao : renderList)
     {
-        vao->destroy(*gpu);
+        vao->destroy();
         delete vao;
     }
 
@@ -319,7 +320,7 @@ void AstrumVK::drawFrame()
 
     if (timer >= 1.0f)
     {
-        window.setTitle(gpu->about.name + ", fps: " + std::to_string(time.getFps()));
+        window.setTitle(GPU::about.name + ", fps: " + std::to_string(time.getFps()));
 
         timer = 0.0f;
     }
@@ -350,14 +351,14 @@ void AstrumVK::drawFrame()
 
 void AstrumVK::awaitDeviceIdle()
 {
-    vkDeviceWaitIdle(gpu->getDevice());
+    vkDeviceWaitIdle(GPU::getDevice());
 }
 
 void AstrumVK::onViewportResize(unsigned int newWidth, unsigned int newHeight)
 {
     awaitDeviceIdle();
 
-    gpu->recheckDeviceCapabilities();
+    GPU::recheckDeviceCapabilities();
 
     commandBuffer->freeCommandBuffers();
     swapChain->destroyFramebuffers();

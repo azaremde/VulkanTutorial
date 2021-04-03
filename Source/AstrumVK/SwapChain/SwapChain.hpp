@@ -65,13 +65,12 @@ private:
         std::vector<VkFence> inFlightFences;
         std::vector<VkFence> imagesInFlight;
 
-        void createSyncObjects(GPU& gpu, uint32_t imageCount);
-        void destroySyncObjects(GPU& gpu);
+        void createSyncObjects(uint32_t imageCount);
+        void destroySyncObjects();
 
         uint32_t currentFrame { 0 };
     } sync;
 
-    GPU& gpu;
     Surface& surface;
     Window& window;
 
@@ -79,7 +78,7 @@ private:
     SwapChain& operator=(const SwapChain&) = delete;
 
 public:
-    SwapChain(GPU& _gpu, Surface& _surface, Window& _window, bool _limitFps = false);
+    SwapChain(Surface& _surface, Window& _window, bool _limitFps = false);
     ~SwapChain();
     
     VkFormat findDepthFormat();

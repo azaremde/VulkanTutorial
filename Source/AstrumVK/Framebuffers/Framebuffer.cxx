@@ -1,6 +1,6 @@
 #include "Framebuffer.hpp"
 
-Framebuffer::Framebuffer(GPU& _gpu, const VkExtent2D& size, const std::vector<VkImageView>& attachments, const VkRenderPass& renderPass) : gpu { _gpu }
+Framebuffer::Framebuffer(const VkExtent2D& size, const std::vector<VkImageView>& attachments, const VkRenderPass& renderPass)
 {    
     VkFramebufferCreateInfo framebufferInfo{};
     framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -12,7 +12,7 @@ Framebuffer::Framebuffer(GPU& _gpu, const VkExtent2D& size, const std::vector<Vk
     framebufferInfo.layers = 1;
 
     VK_CHECK(
-        vkCreateFramebuffer(gpu.getDevice(), &framebufferInfo, nullptr, &framebuffer),
+        vkCreateFramebuffer(GPU::getDevice(), &framebufferInfo, nullptr, &framebuffer),
         "Failed to create framebuffer."
     );
 
@@ -21,7 +21,7 @@ Framebuffer::Framebuffer(GPU& _gpu, const VkExtent2D& size, const std::vector<Vk
 
 Framebuffer::~Framebuffer()
 {
-    vkDestroyFramebuffer(gpu.getDevice(), framebuffer, nullptr);
+    vkDestroyFramebuffer(GPU::getDevice(), framebuffer, nullptr);
     DebugLogOut("Framebuffer destroyed.");
 }
 

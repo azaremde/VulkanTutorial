@@ -24,7 +24,6 @@ private:
 
     std::vector<VkCommandBuffer> commandBuffers;
 
-    GPU& gpu;
     SwapChain& swapChain;
     Pipeline& pipeline;
 
@@ -59,7 +58,7 @@ public:
     const VkCommandPool& getCommandPool() const;
     const std::vector<VkCommandBuffer>& getCommandBuffers() const;
 
-    CommandBuffer(GPU& _gpu, SwapChain& _swapChain, Pipeline& _pipeline);
+    CommandBuffer(SwapChain& _swapChain, Pipeline& _pipeline);
     ~CommandBuffer();
 };
 

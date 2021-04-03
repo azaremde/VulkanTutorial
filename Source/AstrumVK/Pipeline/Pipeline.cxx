@@ -58,14 +58,14 @@ void Pipeline::createDescriptorSetLayout()
     layoutInfo.pBindings = bindings.data();
     
     VK_CHECK(
-        vkCreateDescriptorSetLayout(gpu.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout),
+        vkCreateDescriptorSetLayout(GPU::getDevice(), &layoutInfo, nullptr, &descriptorSetLayout),
         "Failed to create descriptor set layout."
     );
 }
 
 void Pipeline::destroyDescriptorSetLayout()
 {    
-    vkDestroyDescriptorSetLayout(gpu.getDevice(), descriptorSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(GPU::getDevice(), descriptorSetLayout, nullptr);
 }
 
 void Pipeline::Fixed::setVertexInputInfo()
@@ -205,19 +205,19 @@ void Pipeline::createPipelineLayout()
     pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
     VK_CHECK(
-        vkCreatePipelineLayout(gpu.getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout),
+        vkCreatePipelineLayout(GPU::getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout),
         "Failed to create pipeline layout."
     );
 }
 
 void Pipeline::destroyPipelineLayout()
 {
-    vkDestroyPipelineLayout(gpu.getDevice(), pipelineLayout, nullptr);
+    vkDestroyPipelineLayout(GPU::getDevice(), pipelineLayout, nullptr);
 }
 
 void Pipeline::createRenderPass()
 {
-    renderPass = new RenderPass(gpu, swapChain);
+    renderPass = new RenderPass(swapChain);
 }
 
 void Pipeline::destroyRenderPass()
@@ -246,7 +246,7 @@ void Pipeline::createPipeline()
     pipelineInfo.basePipelineIndex = -1; // Optional
 
     VK_CHECK(
-        vkCreateGraphicsPipelines(gpu.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline),
+        vkCreateGraphicsPipelines(GPU::getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline),
         "Failed to create graphics pipeline."
     );
 
@@ -255,7 +255,7 @@ void Pipeline::createPipeline()
 
 void Pipeline::destroyPipeline()
 {
-    vkDestroyPipeline(gpu.getDevice(), pipeline, nullptr);
+    vkDestroyPipeline(GPU::getDevice(), pipeline, nullptr);
 }
 
 void Pipeline::createGraphicsPipeline()
@@ -291,7 +291,7 @@ void Pipeline::destroyGraphicsPipeline()
     DebugLogOut("Graphics pipeline destroyed.");
 }
 
-Pipeline::Pipeline(GPU& _gpu, SwapChain& _swapChain, Shader& _shader) : gpu { _gpu }, swapChain { _swapChain }, shader { _shader }
+Pipeline::Pipeline(SwapChain& _swapChain, Shader& _shader) : swapChain { _swapChain }, shader { _shader }
 {
     createGraphicsPipeline();
 }

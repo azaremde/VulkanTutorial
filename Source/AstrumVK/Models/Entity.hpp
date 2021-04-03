@@ -28,7 +28,7 @@ public:
 
     std::vector<VkDescriptorSet> descriptorSets;
 
-    void destroy(GPU& gpu);
+    void destroy();
 
     Entity(const Entity&) = delete;
     Entity& operator=(const Entity&) = delete;

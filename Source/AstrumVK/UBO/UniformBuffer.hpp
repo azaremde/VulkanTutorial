@@ -36,7 +36,6 @@ struct UniformLayout
 class UniformBuffer
 {
 private:
-    GPU& gpu;
     SwapChain& swapChain;
     Pipeline& pipeline;
 
@@ -61,7 +60,6 @@ public:
     void updateUniformBuffer(uint32_t imageIndex, uint32_t index, uint32_t size, void* data);
 
     UniformBuffer(
-        GPU& _gpu, 
         SwapChain& _swapChain, 
         Pipeline& _pipeline, 
         std::vector<UniformLayout> _layouts,

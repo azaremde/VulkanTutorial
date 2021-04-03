@@ -10,14 +10,14 @@ VkShaderModule Shader::createShaderModule(const std::vector<char>& code)
     VkShaderModule shaderModule;
 
     VK_CHECK(
-        vkCreateShaderModule(gpu.getDevice(), &createInfo, nullptr, &shaderModule),
+        vkCreateShaderModule(GPU::getDevice(), &createInfo, nullptr, &shaderModule),
         "Failed to create shader module."
     );
 
     return shaderModule;
 }
 
-Shader::Shader(GPU& _gpu, const std::string& vertShaderPath, const std::string& fragShaderPath) : gpu { _gpu }
+Shader::Shader(const std::string& vertShaderPath, const std::string& fragShaderPath)
 {
     std::vector<char> vertShaderCode = ShadersUtil::readFile(vertShaderPath);
     std::vector<char> fragShaderCode = ShadersUtil::readFile(fragShaderPath);
@@ -40,8 +40,8 @@ Shader::Shader(GPU& _gpu, const std::string& vertShaderPath, const std::string& 
 
 Shader::~Shader()
 {
-    vkDestroyShaderModule(gpu.getDevice(), vertShaderModule, nullptr);
-    vkDestroyShaderModule(gpu.getDevice(), fragShaderModule, nullptr);
+    vkDestroyShaderModule(GPU::getDevice(), vertShaderModule, nullptr);
+    vkDestroyShaderModule(GPU::getDevice(), fragShaderModule, nullptr);
 
     DebugLogOut("Shaders destroyed.");
 }

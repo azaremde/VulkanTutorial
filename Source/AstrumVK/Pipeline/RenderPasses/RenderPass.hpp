@@ -13,14 +13,13 @@ class RenderPass
 private:
     VkRenderPass renderPass;
 
-    GPU& gpu;
     SwapChain& swapChain;
 
     RenderPass(const RenderPass&) = delete;
     RenderPass& operator=(const RenderPass&) = delete;
 
 public:
-    RenderPass(GPU& _gpu, SwapChain& _swapChain);
+    RenderPass(SwapChain& _swapChain);
     ~RenderPass();
 
     const VkRenderPass& getRenderPass() const;

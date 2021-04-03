@@ -19,7 +19,7 @@ VkCommandBuffer CommandBuffer::beginSingleTimeCommands() {
     allocInfo.commandBufferCount = 1;
 
     VkCommandBuffer commandBuffer;
-    vkAllocateCommandBuffers(gpu.getDevice(), &allocInfo, &commandBuffer);
+    vkAllocateCommandBuffers(GPU::getDevice(), &allocInfo, &commandBuffer);
 
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -38,10 +38,10 @@ void CommandBuffer::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    vkQueueSubmit(gpu.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(gpu.getGraphicsQueue());
+    vkQueueSubmit(GPU::getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(GPU::getGraphicsQueue());
 
-    vkFreeCommandBuffers(gpu.getDevice(), commandPool, 1, &commandBuffer);
+    vkFreeCommandBuffers(GPU::getDevice(), commandPool, 1, &commandBuffer);
 }
 
 void CommandBuffer::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
@@ -138,7 +138,7 @@ void CommandBuffer::createVertexBuffer(Entity* vao, const std::vector<Vertex>& v
     
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
-    gpu.createBuffer(
+    GPU::createBuffer(
         bufferSize, 
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
@@ -147,11 +147,11 @@ void CommandBuffer::createVertexBuffer(Entity* vao, const std::vector<Vertex>& v
     );
 
     void* data;
-    vkMapMemory(gpu.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+    vkMapMemory(GPU::getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
         memcpy(data, vertices.data(), (size_t) bufferSize);
-    vkUnmapMemory(gpu.getDevice(), stagingBufferMemory);
+    vkUnmapMemory(GPU::getDevice(), stagingBufferMemory);
 
-    gpu.createBuffer(
+    GPU::createBuffer(
         bufferSize, 
         VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
@@ -161,8 +161,8 @@ void CommandBuffer::createVertexBuffer(Entity* vao, const std::vector<Vertex>& v
 
     copyBuffer(stagingBuffer, vao->buffer, bufferSize);
     
-    vkDestroyBuffer(gpu.getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(gpu.getDevice(), stagingBufferMemory, nullptr);
+    vkDestroyBuffer(GPU::getDevice(), stagingBuffer, nullptr);
+    vkFreeMemory(GPU::getDevice(), stagingBufferMemory, nullptr);
 }
 
 void CommandBuffer::createVertexBuffer(Entity* vao, const std::vector<Vert>& vertices)
@@ -173,7 +173,7 @@ void CommandBuffer::createVertexBuffer(Entity* vao, const std::vector<Vert>& ver
     
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
-    gpu.createBuffer(
+    GPU::createBuffer(
         bufferSize, 
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
@@ -182,11 +182,11 @@ void CommandBuffer::createVertexBuffer(Entity* vao, const std::vector<Vert>& ver
     );
 
     void* data;
-    vkMapMemory(gpu.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+    vkMapMemory(GPU::getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
         memcpy(data, vertices.data(), (size_t) bufferSize);
-    vkUnmapMemory(gpu.getDevice(), stagingBufferMemory);
+    vkUnmapMemory(GPU::getDevice(), stagingBufferMemory);
 
-    gpu.createBuffer(
+    GPU::createBuffer(
         bufferSize, 
         VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
@@ -196,8 +196,8 @@ void CommandBuffer::createVertexBuffer(Entity* vao, const std::vector<Vert>& ver
 
     copyBuffer(stagingBuffer, vao->buffer, bufferSize);
     
-    vkDestroyBuffer(gpu.getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(gpu.getDevice(), stagingBufferMemory, nullptr);
+    vkDestroyBuffer(GPU::getDevice(), stagingBuffer, nullptr);
+    vkFreeMemory(GPU::getDevice(), stagingBufferMemory, nullptr);
 }
 
 void CommandBuffer::createIndexBuffer(Entity* vao, const std::vector<uint32_t>& indices)
@@ -208,7 +208,7 @@ void CommandBuffer::createIndexBuffer(Entity* vao, const std::vector<uint32_t>& 
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
-    gpu.createBuffer(
+    GPU::createBuffer(
         bufferSize, 
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
@@ -217,11 +217,11 @@ void CommandBuffer::createIndexBuffer(Entity* vao, const std::vector<uint32_t>& 
     );
 
     void* data;
-    vkMapMemory(gpu.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+    vkMapMemory(GPU::getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
         memcpy(data, indices.data(), (size_t) bufferSize);
-    vkUnmapMemory(gpu.getDevice(), stagingBufferMemory);
+    vkUnmapMemory(GPU::getDevice(), stagingBufferMemory);
 
-    gpu.createBuffer(
+    GPU::createBuffer(
         bufferSize, 
         VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
@@ -231,15 +231,15 @@ void CommandBuffer::createIndexBuffer(Entity* vao, const std::vector<uint32_t>& 
 
     copyBuffer(stagingBuffer, vao->indexBuffer, bufferSize);
 
-    vkDestroyBuffer(gpu.getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(gpu.getDevice(), stagingBufferMemory, nullptr);
+    vkDestroyBuffer(GPU::getDevice(), stagingBuffer, nullptr);
+    vkFreeMemory(GPU::getDevice(), stagingBufferMemory, nullptr);
 }
 
 void CommandBuffer::createCommandPool()
 {
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.queueFamilyIndex = gpu.getQueueFamilyIndices().graphics.value();
+    poolInfo.queueFamilyIndex = GPU::getQueueFamilyIndices().graphics.value();
 
     // First option: we want to record it dynamically.
     // Second option: we want to record it once.
@@ -247,7 +247,7 @@ void CommandBuffer::createCommandPool()
     // poolInfo.flags = 0; // Optional
 
     VK_CHECK(
-        vkCreateCommandPool(gpu.getDevice(), &poolInfo, nullptr, &commandPool),
+        vkCreateCommandPool(GPU::getDevice(), &poolInfo, nullptr, &commandPool),
         "Failed to create command pool."
     );
 
@@ -256,7 +256,7 @@ void CommandBuffer::createCommandPool()
 
 void CommandBuffer::destroyCommandPool()
 {
-    vkDestroyCommandPool(gpu.getDevice(), commandPool, nullptr);
+    vkDestroyCommandPool(GPU::getDevice(), commandPool, nullptr);
 
     DebugLogOut("Command pool destroyed.");
 }
@@ -272,7 +272,7 @@ void CommandBuffer::createCommandBuffers()
     allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
 
     VK_CHECK(
-        vkAllocateCommandBuffers(gpu.getDevice(), &allocInfo, commandBuffers.data()),
+        vkAllocateCommandBuffers(GPU::getDevice(), &allocInfo, commandBuffers.data()),
         "Failed to allocate command buffers."
     );
 }
@@ -350,14 +350,14 @@ void CommandBuffer::render(
 void CommandBuffer::freeCommandBuffers()
 {
     vkFreeCommandBuffers(
-        gpu.getDevice(), 
+        GPU::getDevice(), 
         commandPool, 
         static_cast<uint32_t>(commandBuffers.size()), 
         commandBuffers.data()
     );
 }
 
-CommandBuffer::CommandBuffer(GPU& _gpu, SwapChain& _swapChain, Pipeline& _pipeline) : gpu { _gpu }, swapChain { _swapChain }, pipeline { _pipeline }
+CommandBuffer::CommandBuffer(SwapChain& _swapChain, Pipeline& _pipeline) : swapChain { _swapChain }, pipeline { _pipeline }
 {
     createCommandPool();
     createCommandBuffers();

@@ -2,12 +2,12 @@
 
 #include "AstrumVK/Images/Image.hpp"
 
-void Entity::destroy(GPU& gpu)
+void Entity::destroy()
 {    
-    vkDestroyBuffer(gpu.getDevice(), buffer, nullptr);
-    vkFreeMemory(gpu.getDevice(), memory, nullptr);
-    vkDestroyBuffer(gpu.getDevice(), indexBuffer, nullptr);
-    vkFreeMemory(gpu.getDevice(), indexBufferMemory, nullptr);
+    vkDestroyBuffer(GPU::getDevice(), buffer, nullptr);
+    vkFreeMemory(GPU::getDevice(), memory, nullptr);
+    vkDestroyBuffer(GPU::getDevice(), indexBuffer, nullptr);
+    vkFreeMemory(GPU::getDevice(), indexBufferMemory, nullptr);
 
     delete albedoColor;
 }

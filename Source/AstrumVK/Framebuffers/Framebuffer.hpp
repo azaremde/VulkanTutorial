@@ -12,15 +12,13 @@ class Framebuffer
 private:
     VkFramebuffer framebuffer;
 
-    GPU& gpu;
-
     Framebuffer(const Framebuffer&) = delete;
     Framebuffer& operator=(const Framebuffer&) = delete;
 
 public:
     const VkFramebuffer& getFramebuffer() const;
 
-    Framebuffer(GPU& _gpu, const VkExtent2D& size, const std::vector<VkImageView>& attachments, const VkRenderPass& renderPass);
+    Framebuffer(const VkExtent2D& size, const std::vector<VkImageView>& attachments, const VkRenderPass& renderPass);
     ~Framebuffer();
 };
 

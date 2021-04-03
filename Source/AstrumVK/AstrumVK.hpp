@@ -29,7 +29,7 @@ private:
     void createSurface();
     void destroySurface();
 
-    GPU* gpu;
+    // GPU* gpu;
     void createGPU();
     void destroyGPU();
 

@@ -13,28 +13,28 @@
 class GPU
 {
 private:
-    VkPhysicalDevice physicalDevice { VK_NULL_HANDLE };
-    void pickPhysicalDevice();
+    inline static VkPhysicalDevice physicalDevice { VK_NULL_HANDLE };
+    static void pickPhysicalDevice();
 
-    VkDevice device { VK_NULL_HANDLE };
-    void createLogicalDevice();
-    void destroyLogicalDevice();
+    inline static VkDevice device { VK_NULL_HANDLE };
+    static void createLogicalDevice();
+    static void destroyLogicalDevice();
 
     struct {
-        QueueFamilyIndices familyIndices;
-        VkQueue graphics;
-        VkQueue present;
-    } queues;
+        inline static QueueFamilyIndices familyIndices;
+        inline static VkQueue graphics;
+        inline static VkQueue present;
+    } inline static queues;
 
-    void retrieveQueues();
+    static void retrieveQueues();
 
-    SwapChainSupportDetails swapChainSupport;
+    inline static SwapChainSupportDetails swapChainSupport;
     
-    bool isDeviceSuitable(const VkPhysicalDevice& physicalDevice);
+    static bool isDeviceSuitable(const VkPhysicalDevice& physicalDevice);
 
-    VkInstance& instance;
+    inline static VkInstance* instance;
 
-    Surface& surface;
+    inline static Surface* surface;
 
     inline static const std::vector<const char*> deviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -45,33 +45,50 @@ private:
     GPU(const GPU&) = delete;
     GPU& operator=(const GPU&) = delete;
 
-public:
-    GPU(VkInstance& _instance, Surface& _surface);
+    GPU();
     ~GPU();
 
-    void recheckDeviceCapabilities();
+public:
+    inline static void create(VkInstance* _instance, Surface* _surface)
+    {
+        instance = _instance;
+        surface = _surface;
+
+        pickPhysicalDevice();
+        createLogicalDevice();
+        retrieveQueues();
+    }
+
+    inline static void destroy()
+    {
+        destroyLogicalDevice();
+
+        DebugLogOut("Logical device has been destroyed.");        
+    }
+
+    static void recheckDeviceCapabilities();
     
-    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-    void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+    static void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+    static void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 
     // Todo: move into a helper class specially for this.
-    VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+    static VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
-    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+    static uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-    const VkQueue& getGraphicsQueue() const;
-    const VkQueue& getPresentQueue() const;
+    static const VkQueue& getGraphicsQueue();
+    static const VkQueue& getPresentQueue();
 
-    const VkPhysicalDevice& getPhysicalDevice() const;
-    const VkDevice& getDevice() const;
-    const QueueFamilyIndices& getQueueFamilyIndices() const;
-    const SwapChainSupportDetails& getSwapChainSupportDetails() const;    
+    static const VkPhysicalDevice& getPhysicalDevice();
+    static const VkDevice& getDevice();
+    static const QueueFamilyIndices& getQueueFamilyIndices();
+    static const SwapChainSupportDetails& getSwapChainSupportDetails();
 
-    VkPhysicalDeviceProperties props;
+    inline static VkPhysicalDeviceProperties props;
 
     struct {
-        std::string name;
-    } about;
+        inline static std::string name;
+    } inline static about;
 };
 
 #endif

@@ -30,7 +30,6 @@ private:
 
     std::string filename;
     
-    GPU& gpu;
     CommandBuffer& commandBuffer;
 
     Texture2D(const Texture2D&) = delete;
@@ -47,7 +46,7 @@ public:
         return textureSampler;
     }
 
-    Texture2D(GPU& _gpu, CommandBuffer& _commandBuffer, ImageAsset* imageAsset);
+    Texture2D(CommandBuffer& _commandBuffer, ImageAsset* imageAsset);
     ~Texture2D();
 };
 

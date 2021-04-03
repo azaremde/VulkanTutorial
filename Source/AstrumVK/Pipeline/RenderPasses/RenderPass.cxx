@@ -1,6 +1,7 @@
 #include "RenderPass.hpp"
 
-RenderPass::RenderPass(GPU& _gpu, SwapChain& _swapChain) : gpu { _gpu }, swapChain { _swapChain }
+// Todo: Add settings on creation
+RenderPass::RenderPass(SwapChain& _swapChain) : swapChain { _swapChain }
 {
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = swapChain.getSurfaceFormat().format;
@@ -57,7 +58,7 @@ RenderPass::RenderPass(GPU& _gpu, SwapChain& _swapChain) : gpu { _gpu }, swapCha
     renderPassInfo.pDependencies = &dependency;
 
     VK_CHECK(
-        vkCreateRenderPass(gpu.getDevice(), &renderPassInfo, nullptr, &renderPass),
+        vkCreateRenderPass(GPU::getDevice(), &renderPassInfo, nullptr, &renderPass),
         "Failed to create render pass."
     );
 
@@ -66,7 +67,7 @@ RenderPass::RenderPass(GPU& _gpu, SwapChain& _swapChain) : gpu { _gpu }, swapCha
 
 RenderPass::~RenderPass()
 {
-    vkDestroyRenderPass(gpu.getDevice(), renderPass, nullptr);
+    vkDestroyRenderPass(GPU::getDevice(), renderPass, nullptr);
 
     DebugLogOut("Render pass destroyed.");
 }

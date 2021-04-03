@@ -15,7 +15,7 @@ void Texture2D::createTextureImage(ImageAsset* imageAsset)
         throw std::runtime_error("Failed to load texture image.");
     }
 
-    gpu.createBuffer(
+    GPU::createBuffer(
         imageSize, 
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
@@ -23,11 +23,11 @@ void Texture2D::createTextureImage(ImageAsset* imageAsset)
         stagingBufferMemory);
 
     void* data;
-    vkMapMemory(gpu.getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
+    vkMapMemory(GPU::getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
         memcpy(data, imageAsset->pixels, static_cast<size_t>(imageSize));
-    vkUnmapMemory(gpu.getDevice(), stagingBufferMemory);
+    vkUnmapMemory(GPU::getDevice(), stagingBufferMemory);
 
-    gpu.createImage(
+    GPU::createImage(
         imageAsset->texWidth, 
         imageAsset->texHeight, 
         VK_FORMAT_R8G8B8A8_SRGB, 
@@ -41,24 +41,24 @@ void Texture2D::createTextureImage(ImageAsset* imageAsset)
     commandBuffer.copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(imageAsset->texWidth), static_cast<uint32_t>(imageAsset->texHeight));
     commandBuffer.transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     
-    vkDestroyBuffer(gpu.getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(gpu.getDevice(), stagingBufferMemory, nullptr);
+    vkDestroyBuffer(GPU::getDevice(), stagingBuffer, nullptr);
+    vkFreeMemory(GPU::getDevice(), stagingBufferMemory, nullptr);
 }
 
 void Texture2D::destroyTextureImage()
 {
-    vkDestroyImage(gpu.getDevice(), textureImage, nullptr);
-    vkFreeMemory(gpu.getDevice(), textureImageMemory, nullptr);
+    vkDestroyImage(GPU::getDevice(), textureImage, nullptr);
+    vkFreeMemory(GPU::getDevice(), textureImageMemory, nullptr);
 }
 
 void Texture2D::createTextureImageView()
 {    
-    textureImageView = gpu.createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+    textureImageView = GPU::createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 void Texture2D::destroyTextureImageView()
 {
-    vkDestroyImageView(gpu.getDevice(), textureImageView, nullptr);    
+    vkDestroyImageView(GPU::getDevice(), textureImageView, nullptr);    
 }
 
 void Texture2D::createTextureSampler()
@@ -73,7 +73,7 @@ void Texture2D::createTextureSampler()
     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 
     samplerInfo.anisotropyEnable = VK_TRUE;
-    samplerInfo.maxAnisotropy = gpu.props.limits.maxSamplerAnisotropy;
+    samplerInfo.maxAnisotropy = GPU::props.limits.maxSamplerAnisotropy;
     
     // Todo: check IF!!!
     // samplerInfo.anisotropyEnable = VK_FALSE;
@@ -92,17 +92,17 @@ void Texture2D::createTextureSampler()
     samplerInfo.maxLod = 0.0f;
 
     VK_CHECK(
-        vkCreateSampler(gpu.getDevice(), &samplerInfo, nullptr, &textureSampler), 
+        vkCreateSampler(GPU::getDevice(), &samplerInfo, nullptr, &textureSampler), 
         "Failed to create texture sampler."
     );    
 }
 
 void Texture2D::destroyTextureSampler()
 {
-    vkDestroySampler(gpu.getDevice(), textureSampler, nullptr);
+    vkDestroySampler(GPU::getDevice(), textureSampler, nullptr);
 }
 
-Texture2D::Texture2D(GPU& _gpu, CommandBuffer& _commandBuffer, ImageAsset* imageAsset) : gpu { _gpu }, commandBuffer { _commandBuffer }
+Texture2D::Texture2D(CommandBuffer& _commandBuffer, ImageAsset* imageAsset) : commandBuffer { _commandBuffer }
 {
     createTextureImage(imageAsset);
     createTextureImageView();

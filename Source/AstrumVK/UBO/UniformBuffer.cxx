@@ -19,14 +19,14 @@ void UniformBuffer::createDescriptorPool()
     poolInfo.maxSets = static_cast<uint32_t>(swapChain.getImageCount()) * amountOfEntities;
     
     VK_CHECK(
-        vkCreateDescriptorPool(gpu.getDevice(), &poolInfo, nullptr, &descriptorPool), 
+        vkCreateDescriptorPool(GPU::getDevice(), &poolInfo, nullptr, &descriptorPool), 
         "Failed to create descriptor pool."
     );
 }
 
 void UniformBuffer::destroyDescriptorPool()
 {    
-    vkDestroyDescriptorPool(gpu.getDevice(), descriptorPool, nullptr);
+    vkDestroyDescriptorPool(GPU::getDevice(), descriptorPool, nullptr);
 }
 
 void UniformBuffer::allocateDescriptorSets(uint32_t entityIndex)
@@ -41,7 +41,7 @@ void UniformBuffer::allocateDescriptorSets(uint32_t entityIndex)
     entities[entityIndex]->descriptorSets.resize(swapChain.getImageCount());
 
     VK_CHECK(
-        vkAllocateDescriptorSets(gpu.getDevice(), &allocInfo, entities[entityIndex]->descriptorSets.data()), 
+        vkAllocateDescriptorSets(GPU::getDevice(), &allocInfo, entities[entityIndex]->descriptorSets.data()), 
         "Failed to allocate descriptor sets."
     );
 
@@ -96,7 +96,7 @@ void UniformBuffer::allocateDescriptorSets(uint32_t entityIndex)
         }
 
         vkUpdateDescriptorSets(
-            gpu.getDevice(), 
+            GPU::getDevice(), 
             static_cast<uint32_t>(writeDescriptorSets.size()), 
             writeDescriptorSets.data(), 
             0, 
@@ -109,7 +109,7 @@ void UniformBuffer::createUniformBuffers()
 {
     for (size_t i = 0; i < layouts.size(); i++)
     {
-        uint32_t deviceAlignment = static_cast<uint32_t>(gpu.props.limits.minUniformBufferOffsetAlignment);
+        uint32_t deviceAlignment = static_cast<uint32_t>(GPU::props.limits.minUniformBufferOffsetAlignment);
         uint32_t uniformBufferSize = layouts[i].size;    
         
         layouts[i].dynamicAlignment = (uniformBufferSize / deviceAlignment) * deviceAlignment + ((uniformBufferSize % deviceAlignment) > 0 ? deviceAlignment : 0);
@@ -124,7 +124,7 @@ void UniformBuffer::createUniformBuffers()
 
         for (size_t j = 0; j < swapChain.getImageCount(); j++) 
         {
-            gpu.createBuffer(
+            GPU::createBuffer(
                 layouts[i].bufferSize, 
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -141,8 +141,8 @@ void UniformBuffer::destroyUniformBuffers()
     {   
         for (size_t j = 0; j < layouts[i].uniformBuffers.size(); j++)
         {
-            vkDestroyBuffer(gpu.getDevice(), layouts[i].uniformBuffers[j], nullptr);
-            vkFreeMemory(gpu.getDevice(), layouts[i].uniformBuffersMemory[j], nullptr);
+            vkDestroyBuffer(GPU::getDevice(), layouts[i].uniformBuffers[j], nullptr);
+            vkFreeMemory(GPU::getDevice(), layouts[i].uniformBuffersMemory[j], nullptr);
         }
     }
 }
@@ -150,19 +150,17 @@ void UniformBuffer::destroyUniformBuffers()
 void UniformBuffer::updateUniformBuffer(uint32_t imageIndex, uint32_t i, uint32_t size, void* d)
 {    
     void* data;
-    vkMapMemory(gpu.getDevice(), layouts[i].uniformBuffersMemory[imageIndex], 0, size, 0, &data);
+    vkMapMemory(GPU::getDevice(), layouts[i].uniformBuffersMemory[imageIndex], 0, size, 0, &data);
         memcpy(data, d, size);
-    vkUnmapMemory(gpu.getDevice(), layouts[i].uniformBuffersMemory[imageIndex]);
+    vkUnmapMemory(GPU::getDevice(), layouts[i].uniformBuffersMemory[imageIndex]);
 }
 
 UniformBuffer::UniformBuffer(
-    GPU& _gpu, 
     SwapChain& _swapChain, 
     Pipeline& _pipeline, 
     std::vector<UniformLayout> _layouts,
     std::vector<Entity*>& _entities
 ) :
-    gpu { _gpu }, 
     swapChain { _swapChain }, 
     pipeline { _pipeline }, 
     layouts { _layouts },

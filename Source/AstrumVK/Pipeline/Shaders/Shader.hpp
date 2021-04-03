@@ -15,13 +15,11 @@ private:
 
     VkShaderModule createShaderModule(const std::vector<char>& code);
 
-    GPU& gpu;
-
     Shader(const Shader&) = delete;
     Shader& operator=(const Shader&) = delete;
 
 public:
-    Shader(GPU& _gpu, const std::string& vertShaderPath, const std::string& fragShaderPath);
+    Shader(const std::string& vertShaderPath, const std::string& fragShaderPath);
     ~Shader();
 
     const VkShaderModule& getVertShaderModule() const;

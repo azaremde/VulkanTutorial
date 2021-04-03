@@ -73,7 +73,6 @@ private:
     void createPipeline();
     void destroyPipeline();
 
-    GPU& gpu;
     SwapChain& swapChain;
     Shader& shader;
 
@@ -87,7 +86,7 @@ public:
     const VkPipeline& getPipeline() const;
     const VkRenderPass& getRenderPass() const;
 
-    Pipeline(GPU& _gpu, SwapChain& _swapChain, Shader& _shader);
+    Pipeline(SwapChain& _swapChain, Shader& _shader);
     ~Pipeline();
 
     const VkPipelineLayout& getPipelineLayout() const;
