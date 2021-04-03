@@ -148,17 +148,11 @@ void AstrumVK::createUniformBuffer()
 
     imageLayout.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     imageLayout.binding = 2;
-    imageLayout.size = sizeof(StaticUBO);
+    imageLayout.size = sizeof(uint32_t);
     imageLayout.imageView_0 = image_0->getImageView();
     imageLayout.sampler_0 = image_0->getSampler();
     imageLayout.imageView_1 = image_1->getImageView();
     imageLayout.sampler_1 = image_1->getSampler();
-
-    // imageLayout_1.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    // imageLayout_1.binding = 2;
-    // imageLayout_1.size = sizeof(StaticUBO);
-    // imageLayout_1.imageView = image_1->getImageView();
-    // imageLayout_1.sampler = image_1->getSampler();
 
     uniformBuffer = new UniformBuffer(
         *gpu, 
@@ -299,9 +293,9 @@ void AstrumVK::drawFrame()
 
     model_0 = glm::mat4x4(1);
     model_0 = glm::translate(model_0, glm::vec3(0, 0, -10));
-    // model_0 = glm::rotate(model_0, glm::radians(t), glm::vec3(1, 0, 0));
-    // model_0 = glm::rotate(model_0, glm::radians(t), glm::vec3(0, 1, 0));
-    // model_0 = glm::rotate(model_0, glm::radians(t), glm::vec3(0, 0, 1));
+    model_0 = glm::rotate(model_0, glm::radians(t), glm::vec3(1, 0, 0));
+    model_0 = glm::rotate(model_0, glm::radians(t), glm::vec3(0, 1, 0));
+    model_0 = glm::rotate(model_0, glm::radians(t), glm::vec3(0, 0, 1));
 
     model_1 = glm::mat4x4(1);
     model_1 = glm::translate(model_1, glm::vec3(3, 0, -20));

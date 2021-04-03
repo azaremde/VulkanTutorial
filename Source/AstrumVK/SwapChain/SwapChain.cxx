@@ -7,6 +7,7 @@ void SwapChain::chooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &avail
         if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
         {
             surfaceFormat = availableFormat;
+            return;
         }
     }
 
@@ -39,6 +40,7 @@ void SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities)
     if (capabilities.currentExtent.width != UINT32_MAX)
     {
         extent = capabilities.currentExtent;
+        return;
     }
     else
     {
@@ -52,7 +54,8 @@ void SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities)
         actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
         actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
 
-        extent = actualExtent;
+        extent = actualExtent;        
+        return;
     }
 }
 
