@@ -47,6 +47,9 @@ private:
         VkPipelineMultisampleStateCreateInfo multisampling{};
         void setMultisamplingState();
 
+        VkPipelineDepthStencilStateCreateInfo depthStencil{};
+        void setDepthStencilState();
+
         VkPipelineColorBlendAttachmentState colorBlendAttachment{};
         void setColorBlendAttachment();
 

@@ -21,6 +21,7 @@ struct Vert
     static VkVertexInputBindingDescription getBindingDescription()
     {
         VkVertexInputBindingDescription bindingDescription{};
+
         bindingDescription.binding = 0;
         bindingDescription.stride = sizeof(Vert);
         bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;

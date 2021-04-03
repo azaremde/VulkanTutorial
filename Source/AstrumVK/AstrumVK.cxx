@@ -149,8 +149,10 @@ void AstrumVK::createUniformBuffer()
     imageLayout.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     imageLayout.binding = 2;
     imageLayout.size = sizeof(uint32_t);
+    
     imageLayout.imageView_0 = image_0->getImageView();
     imageLayout.sampler_0 = image_0->getSampler();
+    
     imageLayout.imageView_1 = image_1->getImageView();
     imageLayout.sampler_1 = image_1->getSampler();
 

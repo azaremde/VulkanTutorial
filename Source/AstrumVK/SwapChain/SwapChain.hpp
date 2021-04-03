@@ -23,6 +23,15 @@ private:
     void createImageViews();
     void destroyImageViews();
 
+    VkImage depthImage;
+    VkDeviceMemory depthImageMemory;
+    VkImageView depthImageView;
+    void createDepthResources();
+    void destroyDepthResources();
+
+    VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);    
+    bool hasStencilComponent(VkFormat format);
+
     std::vector<Framebuffer*> framebuffers;
 
     VkSurfaceFormatKHR surfaceFormat;
@@ -70,6 +79,8 @@ private:
 public:
     SwapChain(GPU& _gpu, Surface& _surface, Window& _window);
     ~SwapChain();
+    
+    VkFormat findDepthFormat();
 
     void createSwapChain();
     void destroySwapChain();

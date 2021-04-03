@@ -53,7 +53,7 @@ void Image::destroyTextureImage()
 
 void Image::createTextureImageView()
 {    
-    textureImageView = gpu.createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+    textureImageView = gpu.createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 void Image::destroyTextureImageView()

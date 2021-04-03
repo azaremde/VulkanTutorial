@@ -147,6 +147,20 @@ void Pipeline::Fixed::setMultisamplingState()
     multisampling.alphaToOneEnable = VK_FALSE; // Optional
 }
 
+void Pipeline::Fixed::setDepthStencilState()
+{    
+    depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthStencil.depthTestEnable = VK_TRUE;
+    depthStencil.depthWriteEnable = VK_TRUE;
+    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+    depthStencil.depthBoundsTestEnable = VK_FALSE;
+    depthStencil.minDepthBounds = 0.0f; // Optional
+    depthStencil.maxDepthBounds = 1.0f; // Optional
+    depthStencil.stencilTestEnable = VK_FALSE;
+    depthStencil.front = {}; // Optional
+    depthStencil.back = {}; // Optional
+}
+
 void Pipeline::Fixed::setColorBlendAttachment()
 {
     colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -222,7 +236,7 @@ void Pipeline::createPipeline()
     pipelineInfo.pViewportState = &fixed.viewportState;
     pipelineInfo.pRasterizationState = &fixed.rasterizer;
     pipelineInfo.pMultisampleState = &fixed.multisampling;
-    pipelineInfo.pDepthStencilState = nullptr; // Optional
+    pipelineInfo.pDepthStencilState = &fixed.depthStencil; // Optional
     pipelineInfo.pColorBlendState = &fixed.colorBlending;
     pipelineInfo.pDynamicState = nullptr; // Optional
     pipelineInfo.layout = pipelineLayout;
@@ -257,6 +271,7 @@ void Pipeline::createGraphicsPipeline()
     fixed.setViewportState();
     fixed.setRasterizerState();
     fixed.setMultisamplingState();
+    fixed.setDepthStencilState();
     fixed.setColorBlendAttachment();
     fixed.setColorBlending();
     fixed.setDynamicStates();

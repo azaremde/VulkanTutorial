@@ -128,7 +128,7 @@ void SwapChain::createImageViews()
 
     for (size_t i = 0; i < images.size(); i++)
     {
-        imageViews[i] = gpu.createImageView(images[i], surfaceFormat.format);
+        imageViews[i] = gpu.createImageView(images[i], surfaceFormat.format, VK_IMAGE_ASPECT_COLOR_BIT);
 
         DebugLogOut("Image view created.");
     }
@@ -153,7 +153,7 @@ void SwapChain::createFramebuffers(const VkRenderPass& renderPass)
 
     for (size_t i = 0; i < imageViews.size(); i++)
     {
-        framebuffers.emplace_back(new Framebuffer(gpu, extent, { imageViews[i] }, renderPass));
+        framebuffers.emplace_back(new Framebuffer(gpu, extent, { imageViews[i], depthImageView }, renderPass));
     }
 }
 
@@ -273,10 +273,12 @@ void SwapChain::createSwapChain()
     createSwapChainObject();
     createImageViews();
     sync.createSyncObjects(gpu, static_cast<uint32_t>(images.size()));
+    createDepthResources();
 }
 
 void SwapChain::destroySwapChain()
 {
+    destroyDepthResources();
     sync.destroySyncObjects(gpu);
     destroyImageViews();
     destroySwapChainObject();
@@ -285,6 +287,65 @@ void SwapChain::destroySwapChain()
     sync.imagesInFlight.clear();
 
     DebugLogOut("Swap chain destroyed.");
+}
+
+VkFormat SwapChain::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+{
+    // Todo: check in the GPU class, right after creation of logical device.
+    for (VkFormat format : candidates)
+    {
+        VkFormatProperties props;
+        vkGetPhysicalDeviceFormatProperties(gpu.getPhysicalDevice(), format, &props);
+
+        if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+            return format;
+        } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+            return format;
+        }
+    }
+
+    throw std::runtime_error("failed to find supported format!");
+}
+
+VkFormat SwapChain::findDepthFormat() 
+{
+    return findSupportedFormat(
+        {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+        VK_IMAGE_TILING_OPTIMAL,
+        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+    );
+}
+
+bool SwapChain::hasStencilComponent(VkFormat format) 
+{
+    return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+}
+
+void SwapChain::createDepthResources()
+{
+    VkFormat depthFormat = findDepthFormat();
+
+    gpu.createImage(
+        extent.width, 
+        extent.height, 
+        depthFormat, 
+        VK_IMAGE_TILING_OPTIMAL, 
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+        depthImage, 
+        depthImageMemory);
+
+    depthImageView = gpu.createImageView(
+        depthImage, 
+        depthFormat, 
+        VK_IMAGE_ASPECT_DEPTH_BIT);
+}
+
+void SwapChain::destroyDepthResources()
+{
+    vkDestroyImageView(gpu.getDevice(), depthImageView, nullptr);
+    vkDestroyImage(gpu.getDevice(), depthImage, nullptr);
+    vkFreeMemory(gpu.getDevice(), depthImageMemory, nullptr);
 }
 
 SwapChain::SwapChain(GPU &_gpu, Surface &_surface, Window &_window) : gpu{_gpu}, surface{_surface}, window{_window}
