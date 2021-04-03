@@ -64,13 +64,12 @@ void UniformBuffer::allocateDescriptorSets()
 
             if (layouts[j].type != VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
             {
-
                 VkWriteDescriptorSet descriptorWrite{};
                 descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 descriptorWrite.dstSet = descriptorSets[i];
                 descriptorWrite.dstBinding = layouts[j].binding;
                 descriptorWrite.dstArrayElement = 0;
-                descriptorWrite.descriptorType = layouts[j].instances > 0 ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                descriptorWrite.descriptorType = layouts[j].type;
                 descriptorWrite.descriptorCount = 1;
                 descriptorWrite.pBufferInfo = &bufferInfos[j];
 
@@ -89,7 +88,7 @@ void UniformBuffer::allocateDescriptorSets()
                 descriptorWrite.dstSet = descriptorSets[i];
                 descriptorWrite.dstBinding = layouts[j].binding;
                 descriptorWrite.dstArrayElement = 0;
-                descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                descriptorWrite.descriptorType = layouts[j].type;
                 descriptorWrite.descriptorCount = static_cast<uint32_t>(imageInfos.size());
                 descriptorWrite.pImageInfo = imageInfos.data();
 

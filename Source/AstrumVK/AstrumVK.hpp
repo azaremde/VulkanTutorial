@@ -54,7 +54,8 @@ private:
     void createCommandBuffer();
     void destroyCommandBuffer();
 
-    Image* image;
+    Image* image_0;
+    Image* image_1;
     void createImage();
     void destroyImage();
 

@@ -5,7 +5,7 @@
 void Image::createTextureImage()
 {
     int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load("Assets/Images/texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    stbi_uc* pixels = stbi_load(filename.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     if (!pixels) 
@@ -102,7 +102,7 @@ void Image::destroyTextureSampler()
     vkDestroySampler(gpu.getDevice(), textureSampler, nullptr);
 }
 
-Image::Image(GPU& _gpu, CommandBuffer& _commandBuffer) : gpu { _gpu }, commandBuffer { _commandBuffer }
+Image::Image(GPU& _gpu, CommandBuffer& _commandBuffer, const std::string& _filename) : gpu { _gpu }, commandBuffer { _commandBuffer }, filename { _filename }
 {
     createTextureImage();
     createTextureImageView();

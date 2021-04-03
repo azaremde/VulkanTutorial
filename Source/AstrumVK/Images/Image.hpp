@@ -26,6 +26,8 @@ private:
     VkSampler textureSampler;
     void createTextureSampler();
     void destroyTextureSampler();
+
+    std::string filename;
     
     GPU& gpu;
     CommandBuffer& commandBuffer;
@@ -44,7 +46,7 @@ public:
         return textureSampler;
     }
 
-    Image(GPU& _gpu, CommandBuffer& _commandBuffer);
+    Image(GPU& _gpu, CommandBuffer& _commandBuffer, const std::string& _filename);
     ~Image();
 };
 
