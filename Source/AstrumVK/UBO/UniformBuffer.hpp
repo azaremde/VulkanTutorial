@@ -27,8 +27,11 @@ struct UniformLayout
 
     bool dynamic { false };     // Reserved for future use.
 
-    VkImageView imageView;
-    VkSampler sampler;
+    VkImageView imageView_0;
+    VkSampler sampler_0;
+
+    VkImageView imageView_1;
+    VkSampler sampler_1;
 };
 
 class UniformBuffer
@@ -45,13 +48,16 @@ private:
     void createDescriptorPool();
     void destroyDescriptorPool();
 
-    std::vector<VkDescriptorSet> descriptorSets;
-    void allocateDescriptorSets();
+    void allocateDescriptorSets_0();
+    void allocateDescriptorSets_1();
 
     UniformBuffer(const UniformBuffer&) = delete;
     UniformBuffer& operator=(const UniformBuffer&) = delete;
 
 public:
+
+    std::vector<VkDescriptorSet> descriptorSets_0;
+    std::vector<VkDescriptorSet> descriptorSets_1;
 
     std::vector<UniformLayout> layouts;
 

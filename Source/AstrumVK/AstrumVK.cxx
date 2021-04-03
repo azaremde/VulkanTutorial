@@ -135,8 +135,7 @@ void AstrumVK::createUniformBuffer()
 {
     UniformLayout dynamicLayout{};
     UniformLayout staticLayout{};
-    UniformLayout imageLayout_0{};
-    UniformLayout imageLayout_1{};
+    UniformLayout imageLayout{};
 
     dynamicLayout.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     dynamicLayout.binding = 0;
@@ -147,11 +146,13 @@ void AstrumVK::createUniformBuffer()
     staticLayout.binding = 1;
     staticLayout.size = sizeof(StaticUBO);
 
-    imageLayout_0.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    imageLayout_0.binding = 2;
-    imageLayout_0.size = sizeof(StaticUBO);
-    imageLayout_0.imageView = image_0->getImageView();
-    imageLayout_0.sampler = image_0->getSampler();
+    imageLayout.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    imageLayout.binding = 2;
+    imageLayout.size = sizeof(StaticUBO);
+    imageLayout.imageView_0 = image_0->getImageView();
+    imageLayout.sampler_0 = image_0->getSampler();
+    imageLayout.imageView_1 = image_1->getImageView();
+    imageLayout.sampler_1 = image_1->getSampler();
 
     // imageLayout_1.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     // imageLayout_1.binding = 2;
@@ -163,7 +164,7 @@ void AstrumVK::createUniformBuffer()
         *gpu, 
         *swapChain, 
         *pipeline,
-        { dynamicLayout, staticLayout, imageLayout_0 }
+        { dynamicLayout, staticLayout, imageLayout }
     );
 }
 

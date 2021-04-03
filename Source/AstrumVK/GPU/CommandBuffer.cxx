@@ -329,7 +329,7 @@ void CommandBuffer::render(
                 pipeline.getPipelineLayout(), 
                 0, 
                 1, 
-                &uniformBuffer.getDescriptorSets()[i], 
+                &(j == 0 ? uniformBuffer.descriptorSets_0[i] : uniformBuffer.descriptorSets_1[i]),
                 1, 
                 &dynamicOffset
             );
