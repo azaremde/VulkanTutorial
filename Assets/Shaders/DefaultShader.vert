@@ -8,9 +8,9 @@ layout(location = 2) in vec3 normal;
 layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec2 fragTexCoords;
 
-layout(binding = 0) uniform UniformBufferObject {
+layout(binding = 0) uniform DynamicUBO {
     mat4 model;
-} ubo;
+} dynamicUBO;
 
 layout(binding = 1) uniform StaticUBO {
     mat4 view;
@@ -19,8 +19,7 @@ layout(binding = 1) uniform StaticUBO {
 
 void main() 
 {
-    gl_Position = staticUBO.proj * ubo.model * vec4(inPosition, 1.0);
-    // gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
+    gl_Position = staticUBO.proj * dynamicUBO.model * vec4(inPosition, 1.0);
     fragColor = vec3(inColor, 1.0);
 
     fragTexCoords = inColor;

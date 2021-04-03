@@ -31,12 +31,6 @@ struct UniformLayout
 
     std::vector<VkImageView> imageViews;
     std::vector<VkSampler> samplers;
-
-    VkImageView imageView_0;
-    VkSampler sampler_0;
-
-    VkImageView imageView_1;
-    VkSampler sampler_1;
 };
 
 class UniformBuffer
@@ -53,24 +47,16 @@ private:
     void createDescriptorPool();
     void destroyDescriptorPool();
 
-    void allocateDescriptorSets_0();
-    void allocateDescriptorSets_1();
-
-    void allocateDescriptorSets_n(int n);
+    void allocateDescriptorSets(uint32_t entityIndex);
 
     uint32_t amountOfEntities { 0 };
-    std::vector<Entity*> vaos;
+    std::vector<Entity*> entities;
 
     UniformBuffer(const UniformBuffer&) = delete;
     UniformBuffer& operator=(const UniformBuffer&) = delete;
 
 public:
-    std::vector<VkDescriptorSet> descriptorSets_0;
-    std::vector<VkDescriptorSet> descriptorSets_1;
-
     std::vector<UniformLayout> layouts;
-
-    const std::vector<VkDescriptorSet>& getDescriptorSets() const;
     
     void updateUniformBuffer(uint32_t imageIndex, uint32_t index, uint32_t size, void* data);
 
@@ -78,15 +64,8 @@ public:
         GPU& _gpu, 
         SwapChain& _swapChain, 
         Pipeline& _pipeline, 
-        std::vector<UniformLayout> _layouts
-    );
-
-    UniformBuffer(
-        GPU& _gpu, 
-        SwapChain& _swapChain, 
-        Pipeline& _pipeline, 
         std::vector<UniformLayout> _layouts,
-        std::vector<Entity*>& _vaos
+        std::vector<Entity*>& _entities
     );
 
     ~UniformBuffer();

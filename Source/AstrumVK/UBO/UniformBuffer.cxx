@@ -29,7 +29,7 @@ void UniformBuffer::destroyDescriptorPool()
     vkDestroyDescriptorPool(gpu.getDevice(), descriptorPool, nullptr);
 }
 
-void UniformBuffer::allocateDescriptorSets_0()
+void UniformBuffer::allocateDescriptorSets(uint32_t entityIndex)
 {
     std::vector<VkDescriptorSetLayout> setLayouts(swapChain.getImageCount(), pipeline.getDescriptorSetLayout());
     VkDescriptorSetAllocateInfo allocInfo{};
@@ -38,10 +38,10 @@ void UniformBuffer::allocateDescriptorSets_0()
     allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChain.getImageCount());
     allocInfo.pSetLayouts = setLayouts.data();
 
-    descriptorSets_0.resize(swapChain.getImageCount());
+    entities[entityIndex]->descriptorSets.resize(swapChain.getImageCount());
 
     VK_CHECK(
-        vkAllocateDescriptorSets(gpu.getDevice(), &allocInfo, descriptorSets_0.data()), 
+        vkAllocateDescriptorSets(gpu.getDevice(), &allocInfo, entities[entityIndex]->descriptorSets.data()), 
         "Failed to allocate descriptor sets."
     );
 
@@ -64,157 +64,7 @@ void UniformBuffer::allocateDescriptorSets_0()
             {
                 VkWriteDescriptorSet descriptorWrite{};
                 descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrite.dstSet = descriptorSets_0[i];
-                descriptorWrite.dstBinding = layouts[j].binding;
-                descriptorWrite.dstArrayElement = 0;
-                descriptorWrite.descriptorType = layouts[j].type;
-                descriptorWrite.descriptorCount = 1;
-                descriptorWrite.pBufferInfo = &bufferInfos[j];
-
-                writeDescriptorSets.emplace_back(descriptorWrite);
-            }
-            else
-            {
-                VkDescriptorImageInfo imageInfo{};
-                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                imageInfo.imageView = layouts[j].imageView_0;
-                imageInfo.sampler = layouts[j].sampler_0;
-                imageInfos.emplace_back(imageInfo);
-
-                VkWriteDescriptorSet descriptorWrite{};
-                descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrite.dstSet = descriptorSets_0[i];
-                descriptorWrite.dstBinding = layouts[j].binding;
-                descriptorWrite.dstArrayElement = 0;
-                descriptorWrite.descriptorType = layouts[j].type;
-                descriptorWrite.descriptorCount = static_cast<uint32_t>(imageInfos.size());
-                descriptorWrite.pImageInfo = imageInfos.data();
-
-                writeDescriptorSets.emplace_back(descriptorWrite);
-            }
-        }
-
-        vkUpdateDescriptorSets(
-            gpu.getDevice(), 
-            static_cast<uint32_t>(writeDescriptorSets.size()), 
-            writeDescriptorSets.data(), 
-            0, 
-            nullptr
-        );
-    }
-}
-
-void UniformBuffer::allocateDescriptorSets_1()
-{
-    std::vector<VkDescriptorSetLayout> setLayouts(swapChain.getImageCount(), pipeline.getDescriptorSetLayout());
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChain.getImageCount());
-    allocInfo.pSetLayouts = setLayouts.data();
-
-    descriptorSets_1.resize(swapChain.getImageCount());
-
-    VK_CHECK(
-        vkAllocateDescriptorSets(gpu.getDevice(), &allocInfo, descriptorSets_1.data()), 
-        "Failed to allocate descriptor sets."
-    );
-
-    for (size_t i = 0; i < swapChain.getImageCount(); i++) 
-    {
-        std::vector<VkWriteDescriptorSet> writeDescriptorSets;
-        std::vector<VkDescriptorBufferInfo> bufferInfos;
-        std::vector<VkDescriptorImageInfo> imageInfos;
-        bufferInfos.resize(layouts.size());
-
-        for (size_t j = 0; j < layouts.size(); j++)
-        {
-            VkDescriptorBufferInfo bufferInfo{};
-            bufferInfo.buffer = layouts[j].uniformBuffers[i];
-            bufferInfo.offset = 0;
-            bufferInfo.range = layouts[j].size;
-            bufferInfos[j] = bufferInfo;
-
-            if (layouts[j].type != VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-            {
-                VkWriteDescriptorSet descriptorWrite{};
-                descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrite.dstSet = descriptorSets_1[i];
-                descriptorWrite.dstBinding = layouts[j].binding;
-                descriptorWrite.dstArrayElement = 0;
-                descriptorWrite.descriptorType = layouts[j].type;
-                descriptorWrite.descriptorCount = 1;
-                descriptorWrite.pBufferInfo = &bufferInfos[j];
-
-                writeDescriptorSets.emplace_back(descriptorWrite);
-            }
-            else
-            {
-                VkDescriptorImageInfo imageInfo{};
-                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                imageInfo.imageView = layouts[j].imageView_1;
-                imageInfo.sampler = layouts[j].sampler_1;
-                imageInfos.emplace_back(imageInfo);
-
-                VkWriteDescriptorSet descriptorWrite{};
-                descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrite.dstSet = descriptorSets_1[i];
-                descriptorWrite.dstBinding = layouts[j].binding;
-                descriptorWrite.dstArrayElement = 0;
-                descriptorWrite.descriptorType = layouts[j].type;
-                descriptorWrite.descriptorCount = static_cast<uint32_t>(imageInfos.size());
-                descriptorWrite.pImageInfo = imageInfos.data();
-
-                writeDescriptorSets.emplace_back(descriptorWrite);
-            }
-        }
-
-        vkUpdateDescriptorSets(
-            gpu.getDevice(), 
-            static_cast<uint32_t>(writeDescriptorSets.size()), 
-            writeDescriptorSets.data(), 
-            0, 
-            nullptr
-        );
-    }
-}
-
-void UniformBuffer::allocateDescriptorSets_n(int n)
-{
-    std::vector<VkDescriptorSetLayout> setLayouts(swapChain.getImageCount(), pipeline.getDescriptorSetLayout());
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChain.getImageCount());
-    allocInfo.pSetLayouts = setLayouts.data();
-
-    vaos[n]->descriptorSets.resize(swapChain.getImageCount());
-
-    VK_CHECK(
-        vkAllocateDescriptorSets(gpu.getDevice(), &allocInfo, vaos[n]->descriptorSets.data()), 
-        "Failed to allocate descriptor sets."
-    );
-
-    for (size_t i = 0; i < swapChain.getImageCount(); i++) 
-    {
-        std::vector<VkWriteDescriptorSet> writeDescriptorSets;
-        std::vector<VkDescriptorBufferInfo> bufferInfos;
-        std::vector<VkDescriptorImageInfo> imageInfos;
-        bufferInfos.resize(layouts.size());
-
-        for (size_t j = 0; j < layouts.size(); j++)
-        {
-            VkDescriptorBufferInfo bufferInfo{};
-            bufferInfo.buffer = layouts[j].uniformBuffers[i];
-            bufferInfo.offset = 0;
-            bufferInfo.range = layouts[j].size;
-            bufferInfos[j] = bufferInfo;
-
-            if (layouts[j].type != VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-            {
-                VkWriteDescriptorSet descriptorWrite{};
-                descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrite.dstSet = vaos[n]->descriptorSets[i];
+                descriptorWrite.dstSet = entities[entityIndex]->descriptorSets[i];
                 descriptorWrite.dstBinding = layouts[j].binding;
                 descriptorWrite.dstArrayElement = 0;
                 descriptorWrite.descriptorType = layouts[j].type;
@@ -228,13 +78,13 @@ void UniformBuffer::allocateDescriptorSets_n(int n)
                 VkDescriptorImageInfo imageInfo{};
                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-                imageInfo.imageView = layouts[j].imageViews[n];
-                imageInfo.sampler = layouts[j].samplers[n];
+                imageInfo.imageView = layouts[j].imageViews[entityIndex];
+                imageInfo.sampler = layouts[j].samplers[entityIndex];
                 imageInfos.emplace_back(imageInfo);
 
                 VkWriteDescriptorSet descriptorWrite{};
                 descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrite.dstSet = vaos[n]->descriptorSets[i];
+                descriptorWrite.dstSet = entities[entityIndex]->descriptorSets[i];
                 descriptorWrite.dstBinding = layouts[j].binding;
                 descriptorWrite.dstArrayElement = 0;
                 descriptorWrite.descriptorType = layouts[j].type;
@@ -319,39 +169,22 @@ UniformBuffer::UniformBuffer(
     GPU& _gpu, 
     SwapChain& _swapChain, 
     Pipeline& _pipeline, 
-    std::vector<UniformLayout> _layouts
-) : 
-    gpu { _gpu }, 
-    swapChain { _swapChain }, 
-    pipeline { _pipeline }, 
-    layouts { _layouts }
-{
-    createUniformBuffers();
-    createDescriptorPool();
-    allocateDescriptorSets_0();
-    allocateDescriptorSets_1();
-}
-
-UniformBuffer::UniformBuffer(
-    GPU& _gpu, 
-    SwapChain& _swapChain, 
-    Pipeline& _pipeline, 
     std::vector<UniformLayout> _layouts,
-    std::vector<Entity*>& _vaos
+    std::vector<Entity*>& _entities
 ) :
     gpu { _gpu }, 
     swapChain { _swapChain }, 
     pipeline { _pipeline }, 
     layouts { _layouts },
-    amountOfEntities { static_cast<uint32_t>(_vaos.size()) },
-    vaos { _vaos }
+    amountOfEntities { static_cast<uint32_t>(_entities.size()) },
+    entities { _entities }
 {
     createUniformBuffers();
     createDescriptorPool();
     
-    for (int n = 0; n < vaos.size(); n++)
+    for (uint32_t entityIndex = 0; entityIndex < entities.size(); entityIndex++)
     {
-        allocateDescriptorSets_n(n);
+        allocateDescriptorSets(entityIndex);
     }
 }
 
@@ -359,9 +192,4 @@ UniformBuffer::~UniformBuffer()
 {
     destroyDescriptorPool();
     destroyUniformBuffers();
-}
-
-const std::vector<VkDescriptorSet>& UniformBuffer::getDescriptorSets() const
-{
-    return descriptorSets_0;
 }
