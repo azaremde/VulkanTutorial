@@ -2,7 +2,8 @@
 
 #include "Debug.hpp"
 
-#include "Models/Model.hpp"
+#include "Assets/MeshAsset.hpp"
+#include "Assets/ImageAsset.hpp"
 
 // Wrapper functions for aligned memory allocation
 // There is currently no standard for this in C++ that works across all platforms and vendors, so we abstract this
@@ -18,8 +19,6 @@ void* alignedAlloc(size_t size, size_t alignment)
 #endif
 	return data;
 }
-
-
 
 // Todo: move to its own class.
 void AstrumVK::createInstance()
@@ -131,7 +130,7 @@ void AstrumVK::destroyPipeline()
     delete defaultShader;
 }
 
-void AstrumVK::createUniformBuffer()
+void AstrumVK::createModels(const std::vector<ModelDescriptor>& models)
 {
     UniformLayout dynamicLayout{};
     UniformLayout staticLayout{};
@@ -140,7 +139,7 @@ void AstrumVK::createUniformBuffer()
     dynamicLayout.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     dynamicLayout.binding = 0;
     dynamicLayout.size = sizeof(DynamicUBO);
-    dynamicLayout.instances = 2;
+    dynamicLayout.instances = static_cast<uint32_t>(models.size());
 
     staticLayout.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     staticLayout.binding = 1;
@@ -149,18 +148,34 @@ void AstrumVK::createUniformBuffer()
     imageLayout.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     imageLayout.binding = 2;
     imageLayout.size = sizeof(uint32_t);
-    
-    imageLayout.imageView_0 = image_0->getImageView();
-    imageLayout.sampler_0 = image_0->getSampler();
-    
-    imageLayout.imageView_1 = image_1->getImageView();
-    imageLayout.sampler_1 = image_1->getSampler();
+
+    for (int i = 0; i < models.size(); i++)
+    {
+        MeshAsset* model = loadModelAsset(models[i].modelFilename);
+        ImageAsset* image = loadImageAsset(models[i].textureFilename);
+
+        Texture2D* img = new Texture2D(*gpu, *commandBuffer, image);
+
+        Entity* entity = new Entity();
+        commandBuffer->createVertexBuffer(entity, model->vertices);
+        commandBuffer->createIndexBuffer(entity, model->indices);
+        entity->albedoColor = img;
+
+        imageLayout.imageViews.emplace_back(img->getImageView());
+        imageLayout.samplers.emplace_back(img->getSampler());
+
+        renderList.emplace_back(entity);
+
+        delete model;
+        delete image;
+    }
 
     uniformBuffer = new UniformBuffer(
-        *gpu, 
+        *gpu,
         *swapChain, 
         *pipeline,
-        { dynamicLayout, staticLayout, imageLayout }
+        { dynamicLayout, staticLayout, imageLayout },
+        renderList
     );
 }
 
@@ -189,18 +204,6 @@ void AstrumVK::destroyCommandBuffer()
     delete commandBuffer;
 }
 
-void AstrumVK::createImage()
-{
-    image_0 = new Image(*gpu, *commandBuffer, "Assets/Images/texture.jpg");
-    image_1 = new Image(*gpu, *commandBuffer, "Assets/Images/diffuse.png");
-}
-
-void AstrumVK::destroyImage()
-{
-    delete image_0;
-    delete image_1;
-}
-
 AstrumVK::AstrumVK(Window& _window) : window { _window }
 {
     window.addOnViewportResizeSubscriber(this);
@@ -209,27 +212,19 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
     createDebugger();
     createSurface();
     createGPU();
+
+    window.setTitle(gpu->about.name);
+
     createSwapChain();
     createPipeline();
     createSwapChainFramebuffers();
     createCommandBuffer();
-    createImage();
-    createUniformBuffer();
 
-    VAO* vao1 = new VAO();
-    VAO* vao2 = new VAO();
-
-    Model* cubeModel = loadModel("Assets/Models/cube.obj");
-    Model* sphereModel = loadModel("Assets/Models/base.fbx");
-
-    commandBuffer->createVertexBuffer(vao1, cubeModel->vertices);
-    commandBuffer->createIndexBuffer(vao1, cubeModel->indices);
-
-    commandBuffer->createVertexBuffer(vao2, sphereModel->vertices);
-    commandBuffer->createIndexBuffer(vao2, sphereModel->indices);
-    
-    renderList.emplace_back(vao1);
-    renderList.emplace_back(vao2);
+    createModels({
+        { "Assets/Models/cube.obj", "Assets/Images/texture.jpg" },
+        { "Assets/Models/base.fbx", "Assets/Images/diffuse.png" },
+        { "Assets/Models/base.fbx", "Assets/Images/diffuse.png" }
+    });
 
     commandBuffer->render(
         pipeline->getRenderPass(),
@@ -242,8 +237,13 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
 
     ubos = (DynamicUBO*)alignedAlloc(uniformBuffer->layouts[0].bufferSize, uniformBuffer->layouts[0].dynamicAlignment);
 
-    getUbo(0)->model = glm::mat4x4(1);
-    getUbo(1)->model = glm::mat4x4(1);
+    glm::mat4x4& model_0 = getUbo(0)->model;
+    glm::mat4x4& model_1 = getUbo(1)->model;
+    glm::mat4x4& model_2 = getUbo(2)->model;
+
+    model_0 = glm::mat4x4(1);
+    model_1 = glm::mat4x4(1);
+    model_2 = glm::mat4x4(1);
 
     staticUbo.proj = glm::perspective(
         glm::radians(70.0f), 
@@ -271,7 +271,6 @@ AstrumVK::~AstrumVK()
     }
 
     destroyUniformBuffer();
-    destroyImage();
     destroyCommandBuffer();
     destroySwapChainFramebuffers();
     destroyPipeline();
@@ -286,24 +285,31 @@ void AstrumVK::drawFrame()
 {
     time.beginFrame();
 
-    static float t { 0.0f };
+    static float theta { 0.0f };
 
-    t += time.getDeltaTime() * 100.0f;
+    theta += time.getDeltaTime() * 100.0f;
 
     glm::mat4x4& model_0 = getUbo(0)->model;
     glm::mat4x4& model_1 = getUbo(1)->model;
+    glm::mat4x4& model_2 = getUbo(2)->model;
 
     model_0 = glm::mat4x4(1);
-    model_0 = glm::translate(model_0, glm::vec3(0, 0, -10));
-    model_0 = glm::rotate(model_0, glm::radians(t), glm::vec3(1, 0, 0));
-    model_0 = glm::rotate(model_0, glm::radians(t), glm::vec3(0, 1, 0));
-    model_0 = glm::rotate(model_0, glm::radians(t), glm::vec3(0, 0, 1));
+    model_0 = glm::translate(model_0, glm::vec3(1, 0, -10));
+    model_0 = glm::rotate(model_0, glm::radians(theta), glm::vec3(1, 0, 0));
+    model_0 = glm::rotate(model_0, glm::radians(theta), glm::vec3(0, 1, 0));
+    model_0 = glm::rotate(model_0, glm::radians(theta), glm::vec3(0, 0, 1));
 
     model_1 = glm::mat4x4(1);
     model_1 = glm::translate(model_1, glm::vec3(3, 0, -20));
     model_1 = glm::rotate(model_1, glm::radians(-90.0f), glm::vec3(1, 0, 0));
-    model_1 = glm::rotate(model_1, glm::radians(t * 1.0f), glm::vec3(0, 0, 1));
+    model_1 = glm::rotate(model_1, glm::radians(theta * 1.0f), glm::vec3(0, 0, 1));
     model_1 = glm::scale(model_1, glm::vec3(0.01f));
+
+    model_2 = glm::mat4x4(1);
+    model_2 = glm::translate(model_2, glm::vec3(1, 0, -10));
+    model_2 = glm::rotate(model_2, glm::radians(theta), glm::vec3(1, 0, 0));
+    model_2 = glm::rotate(model_2, glm::radians(theta), glm::vec3(0, 1, 0));
+    model_2 = glm::rotate(model_2, glm::radians(theta), glm::vec3(0, 0, 1));
 
     static float timer { 0.0f };
 
@@ -311,7 +317,7 @@ void AstrumVK::drawFrame()
 
     if (timer >= 1.0f)
     {
-        DebugLogOut(time.getFps());
+        window.setTitle(gpu->about.name + ", fps: " + std::to_string(time.getFps()));
 
         timer = 0.0f;
     }
@@ -330,10 +336,9 @@ void AstrumVK::drawFrame()
         );
     }
 
-    swapChain->acquireImage();
-
     uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), 0, uniformBuffer->layouts[0].dynamicAlignment * uniformBuffer->layouts[0].instances, ubos);
-
+    
+    swapChain->acquireImage();
     swapChain->syncImagesInFlight();
     swapChain->submit(commandBuffer->getCommandBuffers());
     swapChain->present();

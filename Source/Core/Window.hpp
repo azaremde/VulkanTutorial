@@ -36,6 +36,8 @@ public:
     
     void pollEvents() const;
 
+    void setTitle(const std::string& title);
+
     unsigned int    getWidth() const;
     unsigned int    getHeight() const;
     std::string     getTitle() const;

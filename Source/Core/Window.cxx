@@ -55,6 +55,11 @@ Window::~Window()
     DebugLogOut("Window destroyed.");
 }
 
+void Window::setTitle(const std::string& title)
+{
+    glfwSetWindowTitle(pGlfwWindow, title.c_str());
+}
+
 unsigned int Window::getWidth() const
 {
     return width;

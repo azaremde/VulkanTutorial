@@ -1,5 +1,5 @@
-#ifndef __Models_Model_hpp__
-#define __Models_Model_hpp__
+#ifndef __Assets_MeshAsset_hpp__
+#define __Assets_MeshAsset_hpp__
 
 #pragma once
 
@@ -52,13 +52,13 @@ struct Vert
     }
 };
 
-struct Model
+struct MeshAsset
 {
     std::vector<Vert> vertices;
     std::vector<uint32_t> indices;
 };
 
-inline static Model* loadModel(const std::string& path)
+inline static MeshAsset* loadModelAsset(const std::string& path)
 {
     Assimp::Importer importer;
 
@@ -69,7 +69,7 @@ inline static Model* loadModel(const std::string& path)
         DebugLogOut(importer.GetErrorString());
     }
 
-    Model* result = new Model();
+    MeshAsset* result = new MeshAsset();
 
     aiMesh* mesh = scene->mMeshes[0];
 

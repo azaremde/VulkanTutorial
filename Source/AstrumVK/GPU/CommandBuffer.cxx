@@ -130,7 +130,7 @@ void CommandBuffer::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t w
     endSingleTimeCommands(commandBuffer);
 }
 
-void CommandBuffer::createVertexBuffer(VAO* vao, const std::vector<Vertex>& vertices)
+void CommandBuffer::createVertexBuffer(Entity* vao, const std::vector<Vertex>& vertices)
 {
     vao->vertexCount = static_cast<uint32_t>(vertices.size());
     
@@ -165,7 +165,7 @@ void CommandBuffer::createVertexBuffer(VAO* vao, const std::vector<Vertex>& vert
     vkFreeMemory(gpu.getDevice(), stagingBufferMemory, nullptr);
 }
 
-void CommandBuffer::createVertexBuffer(VAO* vao, const std::vector<Vert>& vertices)
+void CommandBuffer::createVertexBuffer(Entity* vao, const std::vector<Vert>& vertices)
 {
     vao->vertexCount = static_cast<uint32_t>(vertices.size());
     
@@ -200,7 +200,7 @@ void CommandBuffer::createVertexBuffer(VAO* vao, const std::vector<Vert>& vertic
     vkFreeMemory(gpu.getDevice(), stagingBufferMemory, nullptr);
 }
 
-void CommandBuffer::createIndexBuffer(VAO* vao, const std::vector<uint32_t>& indices)
+void CommandBuffer::createIndexBuffer(Entity* vao, const std::vector<uint32_t>& indices)
 {
     vao->indexCount = static_cast<uint32_t>(indices.size());
 
@@ -283,10 +283,9 @@ void CommandBuffer::render(
     const VkExtent2D& extent, 
     const VkPipeline& graphicsPipeline,
     const UniformBuffer& uniformBuffer,
-    const std::vector<VAO*>& vaos
+    const std::vector<Entity*>& vaos
 )
 {
-
     for (size_t i = 0; i < commandBuffers.size(); i++)
     {
         VkCommandBufferBeginInfo beginInfo{};
@@ -311,7 +310,6 @@ void CommandBuffer::render(
         clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
         clearValues[1].depthStencil = {1.0f, 0};
 
-        // VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
@@ -332,8 +330,8 @@ void CommandBuffer::render(
                 VK_PIPELINE_BIND_POINT_GRAPHICS, 
                 pipeline.getPipelineLayout(), 
                 0, 
-                1, 
-                &(j == 0 ? uniformBuffer.descriptorSets_0[i] : uniformBuffer.descriptorSets_1[i]),
+                1,
+                &vaos[j]->descriptorSets[i],
                 1, 
                 &dynamicOffset
             );

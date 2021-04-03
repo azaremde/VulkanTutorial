@@ -1,19 +1,23 @@
-#include "VAO.hpp"
+#include "Entity.hpp"
 
-void VAO::destroy(GPU& gpu)
+#include "AstrumVK/Images/Image.hpp"
+
+void Entity::destroy(GPU& gpu)
 {    
     vkDestroyBuffer(gpu.getDevice(), buffer, nullptr);
     vkFreeMemory(gpu.getDevice(), memory, nullptr);
     vkDestroyBuffer(gpu.getDevice(), indexBuffer, nullptr);
     vkFreeMemory(gpu.getDevice(), indexBufferMemory, nullptr);
+
+    delete albedoColor;
 }
 
-VAO::VAO()
+Entity::Entity()
 {
 
 }
 
-VAO::~VAO()
+Entity::~Entity()
 {
 
 }

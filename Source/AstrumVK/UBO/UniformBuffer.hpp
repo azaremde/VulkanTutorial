@@ -11,6 +11,8 @@
 
 #include "UniformBufferObject.hpp"
 
+#include "AstrumVK/Models/Entity.hpp"
+
 struct UniformLayout
 {   
     VkDescriptorType type; 
@@ -26,6 +28,9 @@ struct UniformLayout
     uint32_t bufferSize { 0 };
 
     bool dynamic { false };     // Reserved for future use.
+
+    std::vector<VkImageView> imageViews;
+    std::vector<VkSampler> samplers;
 
     VkImageView imageView_0;
     VkSampler sampler_0;
@@ -51,11 +56,15 @@ private:
     void allocateDescriptorSets_0();
     void allocateDescriptorSets_1();
 
+    void allocateDescriptorSets_n(int n);
+
+    uint32_t amountOfEntities { 0 };
+    std::vector<Entity*> vaos;
+
     UniformBuffer(const UniformBuffer&) = delete;
     UniformBuffer& operator=(const UniformBuffer&) = delete;
 
 public:
-
     std::vector<VkDescriptorSet> descriptorSets_0;
     std::vector<VkDescriptorSet> descriptorSets_1;
 
@@ -71,6 +80,15 @@ public:
         Pipeline& _pipeline, 
         std::vector<UniformLayout> _layouts
     );
+
+    UniformBuffer(
+        GPU& _gpu, 
+        SwapChain& _swapChain, 
+        Pipeline& _pipeline, 
+        std::vector<UniformLayout> _layouts,
+        std::vector<Entity*>& _vaos
+    );
+
     ~UniformBuffer();
 };
 

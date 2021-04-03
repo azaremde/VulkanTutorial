@@ -8,7 +8,7 @@ void UniformBuffer::createDescriptorPool()
     {
         VkDescriptorPoolSize poolSize{};
         poolSize.type = layouts[i].type;
-        poolSize.descriptorCount = static_cast<uint32_t>(swapChain.getImageCount()) * 2;
+        poolSize.descriptorCount = static_cast<uint32_t>(swapChain.getImageCount()) * amountOfEntities;
         poolSizes.emplace_back(poolSize);
     }
 
@@ -16,7 +16,7 @@ void UniformBuffer::createDescriptorPool()
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = static_cast<uint32_t>(swapChain.getImageCount()) * 2;
+    poolInfo.maxSets = static_cast<uint32_t>(swapChain.getImageCount()) * amountOfEntities;
     
     VK_CHECK(
         vkCreateDescriptorPool(gpu.getDevice(), &poolInfo, nullptr, &descriptorPool), 
@@ -179,20 +179,101 @@ void UniformBuffer::allocateDescriptorSets_1()
     }
 }
 
+void UniformBuffer::allocateDescriptorSets_n(int n)
+{
+    std::vector<VkDescriptorSetLayout> setLayouts(swapChain.getImageCount(), pipeline.getDescriptorSetLayout());
+    VkDescriptorSetAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = descriptorPool;
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChain.getImageCount());
+    allocInfo.pSetLayouts = setLayouts.data();
+
+    vaos[n]->descriptorSets.resize(swapChain.getImageCount());
+
+    VK_CHECK(
+        vkAllocateDescriptorSets(gpu.getDevice(), &allocInfo, vaos[n]->descriptorSets.data()), 
+        "Failed to allocate descriptor sets."
+    );
+
+    for (size_t i = 0; i < swapChain.getImageCount(); i++) 
+    {
+        std::vector<VkWriteDescriptorSet> writeDescriptorSets;
+        std::vector<VkDescriptorBufferInfo> bufferInfos;
+        std::vector<VkDescriptorImageInfo> imageInfos;
+        bufferInfos.resize(layouts.size());
+
+        for (size_t j = 0; j < layouts.size(); j++)
+        {
+            VkDescriptorBufferInfo bufferInfo{};
+            bufferInfo.buffer = layouts[j].uniformBuffers[i];
+            bufferInfo.offset = 0;
+            bufferInfo.range = layouts[j].size;
+            bufferInfos[j] = bufferInfo;
+
+            if (layouts[j].type != VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+            {
+                VkWriteDescriptorSet descriptorWrite{};
+                descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrite.dstSet = vaos[n]->descriptorSets[i];
+                descriptorWrite.dstBinding = layouts[j].binding;
+                descriptorWrite.dstArrayElement = 0;
+                descriptorWrite.descriptorType = layouts[j].type;
+                descriptorWrite.descriptorCount = 1;
+                descriptorWrite.pBufferInfo = &bufferInfos[j];
+
+                writeDescriptorSets.emplace_back(descriptorWrite);
+            }
+            else
+            {
+                VkDescriptorImageInfo imageInfo{};
+                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+                imageInfo.imageView = layouts[j].imageViews[n];
+                imageInfo.sampler = layouts[j].samplers[n];
+                imageInfos.emplace_back(imageInfo);
+
+                VkWriteDescriptorSet descriptorWrite{};
+                descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrite.dstSet = vaos[n]->descriptorSets[i];
+                descriptorWrite.dstBinding = layouts[j].binding;
+                descriptorWrite.dstArrayElement = 0;
+                descriptorWrite.descriptorType = layouts[j].type;
+                descriptorWrite.descriptorCount = static_cast<uint32_t>(imageInfos.size());
+                descriptorWrite.pImageInfo = imageInfos.data();
+
+                writeDescriptorSets.emplace_back(descriptorWrite);
+            }
+        }
+
+        vkUpdateDescriptorSets(
+            gpu.getDevice(), 
+            static_cast<uint32_t>(writeDescriptorSets.size()), 
+            writeDescriptorSets.data(), 
+            0, 
+            nullptr
+        );
+    }
+}
+
 void UniformBuffer::createUniformBuffers()
 {
     for (size_t i = 0; i < layouts.size(); i++)
     {
-        uint32_t deviceAlignment = static_cast<uint32_t>(gpu.limits.minUniformBufferOffsetAlignment);
+        uint32_t deviceAlignment = static_cast<uint32_t>(gpu.props.limits.minUniformBufferOffsetAlignment);
         uint32_t uniformBufferSize = layouts[i].size;    
         
         layouts[i].dynamicAlignment = (uniformBufferSize / deviceAlignment) * deviceAlignment + ((uniformBufferSize % deviceAlignment) > 0 ? deviceAlignment : 0);
-        layouts[i].bufferSize = uniformBufferSize * (layouts[i].instances == 0 ? 1 : layouts[i].instances) * layouts[i].dynamicAlignment;
+
+        // Old variant:
+        // layouts[i].bufferSize = (uniformBufferSize) * (layouts[i].instances == 0 ? 1 : layouts[i].instances) * layouts[i].dynamicAlignment;
+
+        layouts[i].bufferSize = (uniformBufferSize + layouts[i].dynamicAlignment) * (layouts[i].instances == 0 ? 1 : layouts[i].instances);
 
         layouts[i].uniformBuffers.resize(swapChain.getImageCount());
         layouts[i].uniformBuffersMemory.resize(swapChain.getImageCount());
 
-        for (size_t j = 0; j < swapChain.getImageCount(); j++) {
+        for (size_t j = 0; j < swapChain.getImageCount(); j++) 
+        {
             gpu.createBuffer(
                 layouts[i].bufferSize, 
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
@@ -249,6 +330,29 @@ UniformBuffer::UniformBuffer(
     createDescriptorPool();
     allocateDescriptorSets_0();
     allocateDescriptorSets_1();
+}
+
+UniformBuffer::UniformBuffer(
+    GPU& _gpu, 
+    SwapChain& _swapChain, 
+    Pipeline& _pipeline, 
+    std::vector<UniformLayout> _layouts,
+    std::vector<Entity*>& _vaos
+) :
+    gpu { _gpu }, 
+    swapChain { _swapChain }, 
+    pipeline { _pipeline }, 
+    layouts { _layouts },
+    amountOfEntities { static_cast<uint32_t>(_vaos.size()) },
+    vaos { _vaos }
+{
+    createUniformBuffers();
+    createDescriptorPool();
+    
+    for (int n = 0; n < vaos.size(); n++)
+    {
+        allocateDescriptorSets_n(n);
+    }
 }
 
 UniformBuffer::~UniformBuffer()

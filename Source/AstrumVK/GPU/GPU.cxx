@@ -238,7 +238,8 @@ bool GPU::isDeviceSuitable(const VkPhysicalDevice& physDevice) {
     vkGetPhysicalDeviceFeatures(physDevice, &supportedFeatures);
 
     vkGetPhysicalDeviceProperties(physDevice, &props);
-    limits.minUniformBufferOffsetAlignment = props.limits.minUniformBufferOffsetAlignment;
+    
+    about.name = props.deviceName;
 
     return  queues.familyIndices.isComplete() && 
             swapChainSupport.isSupported() && 

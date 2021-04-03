@@ -44,8 +44,15 @@ private:
     void destroyPipeline();
 
     UniformBuffer* uniformBuffer;
-    void createUniformBuffer();
     void destroyUniformBuffer();
+
+    struct ModelDescriptor
+    {
+        std::string modelFilename;
+        std::string textureFilename;
+    };
+
+    void createModels(const std::vector<ModelDescriptor>& models);
 
     void createSwapChainFramebuffers();
     void destroySwapChainFramebuffers();
@@ -54,17 +61,12 @@ private:
     void createCommandBuffer();
     void destroyCommandBuffer();
 
-    Image* image_0;
-    Image* image_1;
-    void createImage();
-    void destroyImage();
-
     DynamicUBO* ubos = new DynamicUBO[2];
     DynamicUBO* getUbo(uint32_t index);
 
     StaticUBO staticUbo;
 
-    std::vector<VAO*> renderList;
+    std::vector<Entity*> renderList;
 
     Time time;
 

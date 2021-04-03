@@ -7,7 +7,9 @@
 
 #include "AstrumVK/GPU/GPU.hpp"
 
-class VAO
+class Texture2D;
+
+class Entity
 {
 public:
     VkBuffer buffer;
@@ -16,17 +18,21 @@ public:
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
 
+    Texture2D* albedoColor;
+
     uint32_t vertexCount { 0 };
     uint32_t indexCount { 0 };
 
+    std::vector<VkDescriptorSet> descriptorSets;
+
     void destroy(GPU& gpu);
 
-    VAO(const VAO&) = delete;
-    VAO& operator=(const VAO&) = delete;
+    Entity(const Entity&) = delete;
+    Entity& operator=(const Entity&) = delete;
 
 public:
-    VAO();
-    ~VAO();
+    Entity();
+    ~Entity();
 };
 
 #endif

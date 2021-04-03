@@ -16,12 +16,12 @@ void SwapChain::chooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &avail
 
 void SwapChain::choosePresentationMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
 {
+    if (limitFps)
+    {
+        presentMode = VK_PRESENT_MODE_FIFO_KHR;
+        return;
+    }
 
-    // Todo: Make it depend on a parameter.
-
-    // #define SWAP_CHAIN_FORCE_SPEED
-
-#ifdef SWAP_CHAIN_FORCE_SPEED
     for (const auto &availablePresentMode : availablePresentModes)
     {
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
@@ -30,7 +30,6 @@ void SwapChain::choosePresentationMode(const std::vector<VkPresentModeKHR> &avai
             return;
         }
     }
-#endif
 
     presentMode = VK_PRESENT_MODE_FIFO_KHR;
 }
@@ -348,7 +347,7 @@ void SwapChain::destroyDepthResources()
     vkFreeMemory(gpu.getDevice(), depthImageMemory, nullptr);
 }
 
-SwapChain::SwapChain(GPU &_gpu, Surface &_surface, Window &_window) : gpu{_gpu}, surface{_surface}, window{_window}
+SwapChain::SwapChain(GPU &_gpu, Surface &_surface, Window &_window, bool _limitFps) : gpu { _gpu }, surface { _surface }, window { _window }, limitFps { _limitFps }
 {
     createSwapChain();
 }

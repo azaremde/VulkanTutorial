@@ -45,6 +45,8 @@ private:
 
     uint32_t imageIndex { 0 };
 
+    bool limitFps { false };
+
     /**
      * Finally found this error.
      * The labtop needs for some reason 
@@ -77,7 +79,7 @@ private:
     SwapChain& operator=(const SwapChain&) = delete;
 
 public:
-    SwapChain(GPU& _gpu, Surface& _surface, Window& _window);
+    SwapChain(GPU& _gpu, Surface& _surface, Window& _window, bool _limitFps = false);
     ~SwapChain();
     
     VkFormat findDepthFormat();

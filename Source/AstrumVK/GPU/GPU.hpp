@@ -70,8 +70,8 @@ public:
     VkPhysicalDeviceProperties props;
 
     struct {
-        VkDeviceSize minUniformBufferOffsetAlignment;
-    } limits;
+        std::string name;
+    } about;
 };
 
 #endif

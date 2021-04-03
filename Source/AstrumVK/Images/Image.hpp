@@ -7,8 +7,9 @@
 
 #include "AstrumVK/GPU/GPU.hpp"
 #include "AstrumVK/GPU/CommandBuffer.hpp"
+#include "Assets/ImageAsset.hpp"
 
-class Image
+class Texture2D
 {
 private:
     VkBuffer stagingBuffer;
@@ -16,7 +17,7 @@ private:
 
     VkImage textureImage;
     VkDeviceMemory textureImageMemory;
-    void createTextureImage();
+    void createTextureImage(ImageAsset* imageAsset);
     void destroyTextureImage();
 
     VkImageView textureImageView;
@@ -32,8 +33,8 @@ private:
     GPU& gpu;
     CommandBuffer& commandBuffer;
 
-    Image(const Image&) = delete;
-    Image& operator=(const Image&) = delete;
+    Texture2D(const Texture2D&) = delete;
+    Texture2D& operator=(const Texture2D&) = delete;
 
 public:
     VkImageView getImageView()
@@ -46,8 +47,8 @@ public:
         return textureSampler;
     }
 
-    Image(GPU& _gpu, CommandBuffer& _commandBuffer, const std::string& _filename);
-    ~Image();
+    Texture2D(GPU& _gpu, CommandBuffer& _commandBuffer, ImageAsset* imageAsset);
+    ~Texture2D();
 };
 
 #endif
