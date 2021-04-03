@@ -10,19 +10,16 @@
 class Surface
 {
 private:
-    VkSurfaceKHR surface;
+    inline static VkSurfaceKHR surface;
 
-    VkInstance& instance;
-    Window& window;
-
-    Surface(const Surface&) = delete;
-    Surface& operator=(const Surface&) = delete;
+    inline static VkInstance* instance;
+    inline static Window* window;
 
 public:
-    const VkSurfaceKHR& getSurface() const;
+    static void create(VkInstance* _instance, Window* _window);
+    static void destroy();
 
-    Surface(VkInstance& _instance, Window& _window);
-    ~Surface();
+    static const VkSurfaceKHR& getSurface();
 };
 
 #endif

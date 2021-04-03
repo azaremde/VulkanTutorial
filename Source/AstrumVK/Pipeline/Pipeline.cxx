@@ -1,7 +1,5 @@
 #include "Pipeline.hpp"
 
-#include "AstrumVK/Models/Vertex.hpp"
-
 #include "Assets/MeshAsset.hpp"
 
 void Pipeline::setShaderStages()

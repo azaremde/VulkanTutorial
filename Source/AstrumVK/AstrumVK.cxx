@@ -88,29 +88,27 @@ void AstrumVK::destroyDebugger()
 
 void AstrumVK::createSurface()
 {
-    surface = new Surface(instance, window);
+    Surface::create(&instance, &window);
 }
 
 void AstrumVK::destroySurface()
 {
-    delete surface;
+    Surface::destroy();
 }
 
 void AstrumVK::createGPU()
 {
-    // gpu = new GPU(instance, *surface);
-    GPU::create(&instance, surface);
+    GPU::create(&instance);
 }
 
 void AstrumVK::destroyGPU()
 {
-    // delete gpu;
     GPU::destroy();
 }
 
 void AstrumVK::createSwapChain()
 {
-    swapChain = new SwapChain(*surface, window, true);
+    swapChain = new SwapChain(window, true);
 }
 
 void AstrumVK::destroySwapChain()

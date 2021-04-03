@@ -11,7 +11,7 @@
 
 #include "UniformBufferObject.hpp"
 
-#include "AstrumVK/Models/Entity.hpp"
+#include "AstrumVK/Entities/Entity.hpp"
 
 struct UniformLayout
 {

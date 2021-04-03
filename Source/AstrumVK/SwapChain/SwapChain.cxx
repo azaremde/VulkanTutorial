@@ -74,7 +74,7 @@ void SwapChain::createSwapChainObject()
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface = surface.getSurface();
+    createInfo.surface = Surface::getSurface();
     createInfo.minImageCount = imageCount;
     createInfo.imageFormat = surfaceFormat.format;
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
@@ -347,7 +347,7 @@ void SwapChain::destroyDepthResources()
     vkFreeMemory(GPU::getDevice(), depthImageMemory, nullptr);
 }
 
-SwapChain::SwapChain(Surface &_surface, Window &_window, bool _limitFps) : surface { _surface }, window { _window }, limitFps { _limitFps }
+SwapChain::SwapChain(Window &_window, bool _limitFps) : window { _window }, limitFps { _limitFps }
 {
     createSwapChain();
 }

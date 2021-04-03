@@ -25,11 +25,9 @@ private:
     void createDebugger();
     void destroyDebugger();
 
-    Surface* surface;
     void createSurface();
     void destroySurface();
 
-    // GPU* gpu;
     void createGPU();
     void destroyGPU();
 

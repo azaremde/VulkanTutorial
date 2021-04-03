@@ -130,41 +130,6 @@ void CommandBuffer::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t w
     endSingleTimeCommands(commandBuffer);
 }
 
-void CommandBuffer::createVertexBuffer(Entity* vao, const std::vector<Vertex>& vertices)
-{
-    vao->vertexCount = static_cast<uint32_t>(vertices.size());
-    
-    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
-    
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    GPU::createBuffer(
-        bufferSize, 
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-        stagingBuffer, 
-        stagingBufferMemory
-    );
-
-    void* data;
-    vkMapMemory(GPU::getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, vertices.data(), (size_t) bufferSize);
-    vkUnmapMemory(GPU::getDevice(), stagingBufferMemory);
-
-    GPU::createBuffer(
-        bufferSize, 
-        VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-        vao->buffer, 
-        vao->memory
-    );
-
-    copyBuffer(stagingBuffer, vao->buffer, bufferSize);
-    
-    vkDestroyBuffer(GPU::getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(GPU::getDevice(), stagingBufferMemory, nullptr);
-}
-
 void CommandBuffer::createVertexBuffer(Entity* vao, const std::vector<Vert>& vertices)
 {
     vao->vertexCount = static_cast<uint32_t>(vertices.size());

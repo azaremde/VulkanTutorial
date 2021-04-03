@@ -7,8 +7,7 @@
 
 #include "GPU.hpp"
 #include "AstrumVK/SwapChain/SwapChain.hpp"
-#include "AstrumVK/Models/Vertex.hpp"
-#include "AstrumVK/Models/Entity.hpp"
+#include "AstrumVK/Entities/Entity.hpp"
 #include "AstrumVK/Pipeline/Pipeline.hpp"
 #include "AstrumVK/UBO/UniformBufferObject.hpp"
 #include "AstrumVK/UBO/UniformBuffer.hpp"
@@ -36,13 +35,16 @@ private:
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
 public:
-    void createVertexBuffer(Entity* vao, const std::vector<Vertex>& vertices);
+
+    // Todo: Move it somewhere
     void createVertexBuffer(Entity* vao, const std::vector<Vert>& vertices);
     void createIndexBuffer(Entity* vao, const std::vector<uint32_t>& indices);
 
+    // Todo: Move it somewhere
     void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
     void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
+    // Todo: Consider a simplification
     void render(
         const VkRenderPass& renderPass, 
         const std::vector<Framebuffer*>& swapChainFramebuffers, 

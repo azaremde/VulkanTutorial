@@ -34,7 +34,7 @@ void GPU::pickPhysicalDevice()
 
 void GPU::createLogicalDevice()
 {
-    queues.familyIndices = QueueFamilyIndices::of(physicalDevice, surface->getSurface());
+    queues.familyIndices = QueueFamilyIndices::of(physicalDevice, Surface::getSurface());
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = { queues.familyIndices.graphics.value(), queues.familyIndices.present.value() };
@@ -102,13 +102,13 @@ GPU::~GPU()
 
 void GPU::recheckDeviceCapabilities()
 {
-    queues.familyIndices = QueueFamilyIndices::of(physicalDevice, surface->getSurface());
+    queues.familyIndices = QueueFamilyIndices::of(physicalDevice, Surface::getSurface());
 
     bool extensionsSupported = checkDeviceExtensionsSupport(physicalDevice);
 
     if (extensionsSupported)
     {
-        swapChainSupport = SwapChainSupportDetails::of(physicalDevice, surface->getSurface());
+        swapChainSupport = SwapChainSupportDetails::of(physicalDevice, Surface::getSurface());
     }
 }
 
@@ -219,13 +219,13 @@ VkImageView GPU::createImageView(VkImage image, VkFormat format, VkImageAspectFl
 }
 
 bool GPU::isDeviceSuitable(const VkPhysicalDevice& physDevice) {
-    queues.familyIndices = QueueFamilyIndices::of(physDevice, surface->getSurface());
+    queues.familyIndices = QueueFamilyIndices::of(physDevice, Surface::getSurface());
 
     bool extensionsSupported = checkDeviceExtensionsSupport(physDevice);
 
     if (extensionsSupported)
     {
-        swapChainSupport = SwapChainSupportDetails::of(physDevice, surface->getSurface());
+        swapChainSupport = SwapChainSupportDetails::of(physDevice, Surface::getSurface());
     }
 
     VkPhysicalDeviceFeatures supportedFeatures;

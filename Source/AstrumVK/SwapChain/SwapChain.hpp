@@ -71,14 +71,13 @@ private:
         uint32_t currentFrame { 0 };
     } sync;
 
-    Surface& surface;
     Window& window;
 
     SwapChain(const SwapChain&) = delete;
     SwapChain& operator=(const SwapChain&) = delete;
 
 public:
-    SwapChain(Surface& _surface, Window& _window, bool _limitFps = false);
+    SwapChain(Window& _window, bool _limitFps = false);
     ~SwapChain();
     
     VkFormat findDepthFormat();

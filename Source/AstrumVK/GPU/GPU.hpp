@@ -34,8 +34,6 @@ private:
 
     inline static VkInstance* instance;
 
-    inline static Surface* surface;
-
     inline static const std::vector<const char*> deviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
@@ -49,10 +47,9 @@ private:
     ~GPU();
 
 public:
-    inline static void create(VkInstance* _instance, Surface* _surface)
+    inline static void create(VkInstance* _instance)
     {
         instance = _instance;
-        surface = _surface;
 
         pickPhysicalDevice();
         createLogicalDevice();
