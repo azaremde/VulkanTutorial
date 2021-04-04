@@ -1,6 +1,10 @@
 #ifndef __AstrumVK_UBO_UBOHost_hpp__
 #define __AstrumVK_UBO_UBOHost_hpp__
 
+#pragma once
+
+#include "UniformBufferLayout.hpp"
+
 void* alignedAlloc(size_t size, size_t alignment);
 
 template <typename T>
@@ -13,6 +17,8 @@ private:
     size_t size;
 
 public:
+    UniformLayout layout;
+
     inline void allocate(size_t _size, size_t _dynamicAlignment)
     {
         dynamicAlignment = _dynamicAlignment;
@@ -25,6 +31,14 @@ public:
     {
         return (T*)((uint64_t)data + (i * dynamicAlignment));
     }  
+
+    inline void update(int i)
+    {        
+        void* data;
+        vkMapMemory(GPU::getDevice(), layout.uniformBuffersMemory[i], 0, layout.dynamicAlignment * layout.instances, 0, &data);
+            memcpy(data, this->data, layout.dynamicAlignment * layout.instances);
+        vkUnmapMemory(GPU::getDevice(), layout.uniformBuffersMemory[i]);
+    }
 };
 
 #endif

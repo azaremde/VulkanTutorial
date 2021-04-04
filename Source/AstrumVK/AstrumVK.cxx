@@ -218,6 +218,7 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
         renderList
     );
 
+    dynamicUbos.layout = uniformBuffer->layouts[0];
     dynamicUbos.allocate(uniformBuffer->layouts[0].bufferSize, uniformBuffer->layouts[0].dynamicAlignment);
 
     // For the simplicity sake we're giving each entity pointer to its ubo.
@@ -319,8 +320,9 @@ void AstrumVK::drawFrame()
             renderList
         );
     }
-
-    uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), 0, uniformBuffer->layouts[0].dynamicAlignment * uniformBuffer->layouts[0].instances, dynamicUbos[0]);
+    
+    // uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), 0, uniformBuffer->layouts[0].dynamicAlignment * uniformBuffer->layouts[0].instances, dynamicUbos[0]);
+    dynamicUbos.update(swapChain->getImageIndex());
     
     swapChain->acquireImage();
     swapChain->syncImagesInFlight();
