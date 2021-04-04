@@ -11,6 +11,8 @@
 #include "Shaders/Shader.hpp"
 #include "RenderPasses/RenderPass.hpp"
 
+#include "AstrumVK/UBO/UniformBufferLayout.hpp"
+
 class Pipeline
 {
 private:
@@ -21,6 +23,8 @@ private:
     VkDescriptorSetLayout descriptorSetLayout;
     void createDescriptorSetLayout();
     void destroyDescriptorSetLayout();
+
+    std::vector<UniformLayout> uniformLayouts;
 
     struct Fixed
     {
@@ -86,7 +90,10 @@ public:
     const VkPipeline& getPipeline() const;
     const VkRenderPass& getRenderPass() const;
 
-    Pipeline(SwapChain& _swapChain, Shader& _shader);
+    std::vector<UniformLayout>& getUniformLayouts();
+
+    // Pipeline(SwapChain& _swapChain, Shader& _shader);
+    Pipeline(SwapChain& _swapChain, Shader& _shader, const std::vector<UniformLayout>& _uniformLayouts);
     ~Pipeline();
 
     const VkPipelineLayout& getPipelineLayout() const;

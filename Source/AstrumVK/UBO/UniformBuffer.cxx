@@ -4,10 +4,10 @@ void UniformBuffer::createDescriptorPool()
 {
     std::vector<VkDescriptorPoolSize> poolSizes;
 
-    for (size_t i = 0; i < layouts.size(); i++)
+    for (size_t i = 0; i < pipeline.getUniformLayouts().size(); i++)
     {
         VkDescriptorPoolSize poolSize{};
-        poolSize.type = layouts[i].type;
+        poolSize.type = pipeline.getUniformLayouts()[i].type;
         poolSize.descriptorCount = static_cast<uint32_t>(swapChain.getImageCount()) * amountOfEntities;
         poolSizes.emplace_back(poolSize);
     }
@@ -50,12 +50,12 @@ void UniformBuffer::allocateDescriptorSets(uint32_t entityIndex)
         std::vector<VkWriteDescriptorSet> writeDescriptorSets;
         std::vector<VkDescriptorBufferInfo> bufferInfos;
         std::vector<VkDescriptorImageInfo> imageInfos;
-        bufferInfos.resize(layouts.size());
+        bufferInfos.resize(pipeline.getUniformLayouts().size());
 
-        for (size_t j = 0; j < layouts.size(); j++)
+        for (size_t j = 0; j < pipeline.getUniformLayouts().size(); j++)
         {
             VkDescriptorBufferInfo bufferInfo{};
-            bufferInfo.buffer = layouts[j].uniformBuffers[i];
+            bufferInfo.buffer = pipeline.getUniformLayouts()[j].uniformBuffers[i];
             bufferInfo.offset = 0;
             bufferInfo.range = VK_WHOLE_SIZE;
 
@@ -64,14 +64,14 @@ void UniformBuffer::allocateDescriptorSets(uint32_t entityIndex)
 
             bufferInfos[j] = bufferInfo;
 
-            if (layouts[j].type != VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+            if (pipeline.getUniformLayouts()[j].type != VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
             {
                 VkWriteDescriptorSet descriptorWrite{};
                 descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 descriptorWrite.dstSet = entities[entityIndex]->descriptorSets[i];
-                descriptorWrite.dstBinding = layouts[j].binding;
+                descriptorWrite.dstBinding = pipeline.getUniformLayouts()[j].binding;
                 descriptorWrite.dstArrayElement = 0;
-                descriptorWrite.descriptorType = layouts[j].type;
+                descriptorWrite.descriptorType = pipeline.getUniformLayouts()[j].type;
                 descriptorWrite.descriptorCount = 1;
                 descriptorWrite.pBufferInfo = &bufferInfos[j];
 
@@ -82,16 +82,16 @@ void UniformBuffer::allocateDescriptorSets(uint32_t entityIndex)
                 VkDescriptorImageInfo imageInfo{};
                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-                imageInfo.imageView = layouts[j].imageViews[entityIndex];
-                imageInfo.sampler = layouts[j].samplers[entityIndex];
+                imageInfo.imageView = pipeline.getUniformLayouts()[j].imageViews[entityIndex];
+                imageInfo.sampler = pipeline.getUniformLayouts()[j].samplers[entityIndex];
                 imageInfos.emplace_back(imageInfo);
 
                 VkWriteDescriptorSet descriptorWrite{};
                 descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 descriptorWrite.dstSet = entities[entityIndex]->descriptorSets[i];
-                descriptorWrite.dstBinding = layouts[j].binding;
+                descriptorWrite.dstBinding = pipeline.getUniformLayouts()[j].binding;
                 descriptorWrite.dstArrayElement = 0;
-                descriptorWrite.descriptorType = layouts[j].type;
+                descriptorWrite.descriptorType = pipeline.getUniformLayouts()[j].type;
                 descriptorWrite.descriptorCount = static_cast<uint32_t>(imageInfos.size());
                 descriptorWrite.pImageInfo = imageInfos.data();
 
@@ -111,46 +111,46 @@ void UniformBuffer::allocateDescriptorSets(uint32_t entityIndex)
 
 void UniformBuffer::createUniformBuffers()
 {
-    for (size_t i = 0; i < layouts.size(); i++)
+    for (size_t i = 0; i < pipeline.getUniformLayouts().size(); i++)
     {
-        if (layouts[i].instances > 0)
+        if (pipeline.getUniformLayouts()[i].instances > 0)
         {
             uint32_t deviceAlignment = static_cast<uint32_t>(GPU::props.limits.minUniformBufferOffsetAlignment);
-            uint32_t uniformBufferSize = layouts[i].size;    
+            uint32_t uniformBufferSize = pipeline.getUniformLayouts()[i].size;    
             
-            layouts[i].dynamicAlignment = (uniformBufferSize / deviceAlignment) * deviceAlignment + ((uniformBufferSize % deviceAlignment) > 0 ? deviceAlignment : 0);
+            pipeline.getUniformLayouts()[i].dynamicAlignment = (uniformBufferSize / deviceAlignment) * deviceAlignment + ((uniformBufferSize % deviceAlignment) > 0 ? deviceAlignment : 0);
 
             // Old variant:
             // layouts[i].bufferSize = (uniformBufferSize) * (layouts[i].instances == 0 ? 1 : layouts[i].instances) * layouts[i].dynamicAlignment;
-            layouts[i].bufferSize = (uniformBufferSize + layouts[i].dynamicAlignment) * (layouts[i].instances == 0 ? 1 : layouts[i].instances);
+            pipeline.getUniformLayouts()[i].bufferSize = (uniformBufferSize + pipeline.getUniformLayouts()[i].dynamicAlignment) * (pipeline.getUniformLayouts()[i].instances == 0 ? 1 : pipeline.getUniformLayouts()[i].instances);
 
-            layouts[i].uniformBuffers.resize(swapChain.getImageCount());
-            layouts[i].uniformBuffersMemory.resize(swapChain.getImageCount());
+            pipeline.getUniformLayouts()[i].uniformBuffers.resize(swapChain.getImageCount());
+            pipeline.getUniformLayouts()[i].uniformBuffersMemory.resize(swapChain.getImageCount());
 
             for (size_t j = 0; j < swapChain.getImageCount(); j++) 
             {
                 GPU::createBuffer(
-                    layouts[i].bufferSize, 
+                    pipeline.getUniformLayouts()[i].bufferSize, 
                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                    layouts[i].uniformBuffers[j], 
-                    layouts[i].uniformBuffersMemory[j]
+                    pipeline.getUniformLayouts()[i].uniformBuffers[j], 
+                    pipeline.getUniformLayouts()[i].uniformBuffersMemory[j]
                 );
             }
         }
         else
         {
-            layouts[i].uniformBuffers.resize(swapChain.getImageCount());
-            layouts[i].uniformBuffersMemory.resize(swapChain.getImageCount());
+            pipeline.getUniformLayouts()[i].uniformBuffers.resize(swapChain.getImageCount());
+            pipeline.getUniformLayouts()[i].uniformBuffersMemory.resize(swapChain.getImageCount());
 
             for (size_t j = 0; j < swapChain.getImageCount(); j++) 
             {
                 GPU::createBuffer(
-                    layouts[i].size, 
+                    pipeline.getUniformLayouts()[i].size, 
                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                    layouts[i].uniformBuffers[j], 
-                    layouts[i].uniformBuffersMemory[j]
+                    pipeline.getUniformLayouts()[i].uniformBuffers[j], 
+                    pipeline.getUniformLayouts()[i].uniformBuffersMemory[j]
                 );
             }
         }
@@ -159,12 +159,12 @@ void UniformBuffer::createUniformBuffers()
 
 void UniformBuffer::destroyUniformBuffers()
 {
-    for (size_t i = 0; i < layouts.size(); i++)
+    for (size_t i = 0; i < pipeline.getUniformLayouts().size(); i++)
     {   
-        for (size_t j = 0; j < layouts[i].uniformBuffers.size(); j++)
+        for (size_t j = 0; j < pipeline.getUniformLayouts()[i].uniformBuffers.size(); j++)
         {
-            vkDestroyBuffer(GPU::getDevice(), layouts[i].uniformBuffers[j], nullptr);
-            vkFreeMemory(GPU::getDevice(), layouts[i].uniformBuffersMemory[j], nullptr);
+            vkDestroyBuffer(GPU::getDevice(), pipeline.getUniformLayouts()[i].uniformBuffers[j], nullptr);
+            vkFreeMemory(GPU::getDevice(), pipeline.getUniformLayouts()[i].uniformBuffersMemory[j], nullptr);
         }
     }
 }
@@ -172,20 +172,18 @@ void UniformBuffer::destroyUniformBuffers()
 void UniformBuffer::updateUniformBuffer(uint32_t imageIndex, uint32_t i, uint32_t size, void* d)
 {    
     void* data;
-    vkMapMemory(GPU::getDevice(), layouts[i].uniformBuffersMemory[imageIndex], 0, size, 0, &data);
+    vkMapMemory(GPU::getDevice(), pipeline.getUniformLayouts()[i].uniformBuffersMemory[imageIndex], 0, size, 0, &data);
         memcpy(data, d, size);
-    vkUnmapMemory(GPU::getDevice(), layouts[i].uniformBuffersMemory[imageIndex]);
+    vkUnmapMemory(GPU::getDevice(), pipeline.getUniformLayouts()[i].uniformBuffersMemory[imageIndex]);
 }
 
 UniformBuffer::UniformBuffer(
     SwapChain& _swapChain, 
     Pipeline& _pipeline, 
-    std::vector<UniformLayout> _layouts,
     std::vector<Entity*>& _entities
 ) :
     swapChain { _swapChain }, 
     pipeline { _pipeline }, 
-    layouts { _layouts },
     amountOfEntities { static_cast<uint32_t>(_entities.size()) },
     entities { _entities }
 {

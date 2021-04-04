@@ -65,8 +65,6 @@ private:
     UBOHost<DynamicUBO, true> dynamicUbos;
     UBOHost<StaticUBO> staticUbos;
 
-    // StaticUBO staticUbo;
-
     std::vector<Entity*> renderList;
 
     Time time;

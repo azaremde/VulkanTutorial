@@ -25,30 +25,50 @@ void Pipeline::setShaderStages()
 }
 
 void Pipeline::createDescriptorSetLayout()
-{    
+{   
+    std::vector<VkDescriptorSetLayoutBinding> bindings;// = { dynamicBinding0, staticBinding1, samplerLayoutBinding };
+
+    for (const auto& layout : uniformLayouts)
+    {
+        VkDescriptorSetLayoutBinding binding{};
+        binding.binding = layout.binding;
+        binding.descriptorCount = 1;
+        binding.descriptorType = layout.type;
+        binding.pImmutableSamplers = nullptr;
+        binding.stageFlags = layout.stageFlags;
+        bindings.emplace_back(binding);
+    }
+
+    // for (int i = 0; i < uniformLayouts.size(); i++)
+    // {
+    //     VkDescriptorSetLayoutBinding binding{};
+    //     binding.binding = 
+    // }
+
     // Todo: DO SOMETHING WITH THIS!!
-    VkDescriptorSetLayoutBinding dynamicBinding0{};
-    dynamicBinding0.binding = 0;
-    dynamicBinding0.descriptorCount = 1;
-    dynamicBinding0.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    dynamicBinding0.pImmutableSamplers = nullptr;
-    dynamicBinding0.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    // VkDescriptorSetLayoutBinding dynamicBinding0{};
+    // dynamicBinding0.binding = 0;
+    // dynamicBinding0.descriptorCount = 1;
+    // dynamicBinding0.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    // dynamicBinding0.pImmutableSamplers = nullptr;
+    // dynamicBinding0.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    // bindings.emplace_back(dynamicBinding0);
 
-    VkDescriptorSetLayoutBinding staticBinding1{};
-    staticBinding1.binding = 1;
-    staticBinding1.descriptorCount = 1;
-    staticBinding1.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    staticBinding1.pImmutableSamplers = nullptr;
-    staticBinding1.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    // VkDescriptorSetLayoutBinding staticBinding1{};
+    // staticBinding1.binding = 1;
+    // staticBinding1.descriptorCount = 1;
+    // staticBinding1.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    // staticBinding1.pImmutableSamplers = nullptr;
+    // staticBinding1.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    // bindings.emplace_back(staticBinding1);
     
-    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-    samplerLayoutBinding.binding = 2;
-    samplerLayoutBinding.descriptorCount = 1;
-    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    samplerLayoutBinding.pImmutableSamplers = nullptr;
-    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    std::vector<VkDescriptorSetLayoutBinding> bindings = { dynamicBinding0, staticBinding1, samplerLayoutBinding };
+    // VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+    // samplerLayoutBinding.binding = 2;
+    // samplerLayoutBinding.descriptorCount = 1;
+    // samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    // samplerLayoutBinding.pImmutableSamplers = nullptr;
+    // samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    // bindings.emplace_back(samplerLayoutBinding);
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -286,7 +306,12 @@ void Pipeline::destroyGraphicsPipeline()
     DebugLogOut("Graphics pipeline destroyed.");
 }
 
-Pipeline::Pipeline(SwapChain& _swapChain, Shader& _shader) : swapChain { _swapChain }, shader { _shader }
+// Pipeline::Pipeline(SwapChain& _swapChain, Shader& _shader) : swapChain { _swapChain }, shader { _shader }
+// {
+//     createGraphicsPipeline();
+// }
+
+Pipeline::Pipeline(SwapChain& _swapChain, Shader& _shader, const std::vector<UniformLayout>& _uniformLayouts) : swapChain { _swapChain }, shader { _shader }, uniformLayouts { _uniformLayouts }
 {
     createGraphicsPipeline();
 }
@@ -304,6 +329,11 @@ const VkPipeline& Pipeline::getPipeline() const
 const VkRenderPass& Pipeline::getRenderPass() const
 {
     return renderPass->getRenderPass();
+}
+
+std::vector<UniformLayout>& Pipeline::getUniformLayouts()
+{
+    return uniformLayouts;
 }
 
 const VkPipelineLayout& Pipeline::getPipelineLayout() const

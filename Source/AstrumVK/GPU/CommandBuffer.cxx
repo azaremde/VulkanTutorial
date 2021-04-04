@@ -243,73 +243,90 @@ void CommandBuffer::createCommandBuffers()
 }
 
 void CommandBuffer::render(
-    const VkRenderPass& renderPass, 
+    Pipeline& pipeline,
     const std::vector<Framebuffer*>& swapChainFramebuffers, 
     const VkExtent2D& extent, 
-    const VkPipeline& graphicsPipeline,
-    const UniformBuffer& uniformBuffer,
     const std::vector<Entity*>& vaos
 )
 {
-    for (size_t i = 0; i < commandBuffers.size(); i++)
+    for (uint32_t i = 0; i < commandBuffers.size(); i++)
     {
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = 0; // Optional
-        beginInfo.pInheritanceInfo = nullptr; // Optional
-
-        VK_CHECK(
-            vkBeginCommandBuffer(commandBuffers[i], &beginInfo),
-            "Failed to begin recording command buffer."
-        );
-
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = renderPass;
-        renderPassInfo.framebuffer = swapChainFramebuffers[i]->getFramebuffer();
-
-        renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = extent;
-
-        std::vector<VkClearValue> clearValues(2);
-        clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
-        clearValues[1].depthStencil = { 1.0f, 0 };
-
-        renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-        renderPassInfo.pClearValues = clearValues.data();
-
-        vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-
-        VkDeviceSize offsets[] = {0};
-
-        for (size_t j = 0; j < vaos.size(); j++)
-        {            
-            vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &vaos[j]->buffer, offsets);
-            vkCmdBindIndexBuffer(commandBuffers[i], vaos[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-            uint32_t dynamicOffset = static_cast<uint32_t>(j) * uniformBuffer.layouts[0].dynamicAlignment;
-
-            vkCmdBindDescriptorSets(
-                commandBuffers[i], 
-                VK_PIPELINE_BIND_POINT_GRAPHICS, 
-                pipeline.getPipelineLayout(), 
-                0, 
-                1,
-                &vaos[j]->descriptorSets[i],
-                1, 
-                &dynamicOffset
-            );
-            
-            vkCmdDrawIndexed(commandBuffers[i], vaos[j]->indexCount, 1, 0, 0, 0);
-        }
-
-        vkCmdEndRenderPass(commandBuffers[i]);
-        VK_CHECK(
-            vkEndCommandBuffer(commandBuffers[i]),
-            "Failed to record command buffer."
+        render(
+            i,
+            pipeline,
+            swapChainFramebuffers,
+            extent,
+            vaos
         );
     }
+}
+
+void CommandBuffer::render(
+    uint32_t i,
+    Pipeline& pipeline,
+    const std::vector<Framebuffer*>& swapChainFramebuffers, 
+    const VkExtent2D& extent, 
+    const std::vector<Entity*>& vaos
+)
+{
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = 0; // Optional
+    beginInfo.pInheritanceInfo = nullptr; // Optional
+
+    VK_CHECK(
+        vkBeginCommandBuffer(commandBuffers[i], &beginInfo),
+        "Failed to begin recording command buffer."
+    );
+
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = pipeline.getRenderPass();
+    renderPassInfo.framebuffer = swapChainFramebuffers[i]->getFramebuffer();
+
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = extent;
+
+    std::vector<VkClearValue> clearValues(2);
+    clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+    clearValues[1].depthStencil = { 1.0f, 0 };
+
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
+
+    vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getPipeline());
+
+    VkDeviceSize offsets[] = {0};
+
+    for (size_t j = 0; j < vaos.size(); j++)
+    {            
+        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &vaos[j]->buffer, offsets);
+        vkCmdBindIndexBuffer(commandBuffers[i], vaos[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+        uint32_t dynamicOffset = static_cast<uint32_t>(j) * pipeline.getUniformLayouts()[0].dynamicAlignment;
+
+        std::vector<uint32_t> dynamicOffsets { dynamicOffset };
+
+        vkCmdBindDescriptorSets(
+            commandBuffers[i], 
+            VK_PIPELINE_BIND_POINT_GRAPHICS, 
+            pipeline.getPipelineLayout(), 
+            0, 
+            1,
+            &vaos[j]->descriptorSets[i],
+            static_cast<uint32_t>(dynamicOffsets.size()),
+            dynamicOffsets.data()
+        );
+        
+        vkCmdDrawIndexed(commandBuffers[i], vaos[j]->indexCount, 1, 0, 0, 0);
+    }
+
+    vkCmdEndRenderPass(commandBuffers[i]);
+    VK_CHECK(
+        vkEndCommandBuffer(commandBuffers[i]),
+        "Failed to record command buffer."
+    );
 }
 
 void CommandBuffer::freeCommandBuffers()
@@ -322,7 +339,7 @@ void CommandBuffer::freeCommandBuffers()
     );
 }
 
-CommandBuffer::CommandBuffer(SwapChain& _swapChain, Pipeline& _pipeline) : swapChain { _swapChain }, pipeline { _pipeline }
+CommandBuffer::CommandBuffer(SwapChain& _swapChain) : swapChain { _swapChain }
 {
     createCommandPool();
     createCommandBuffers();

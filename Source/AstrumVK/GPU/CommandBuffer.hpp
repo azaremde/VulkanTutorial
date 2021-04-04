@@ -24,7 +24,6 @@ private:
     std::vector<VkCommandBuffer> commandBuffers;
 
     SwapChain& swapChain;
-    Pipeline& pipeline;
 
     CommandBuffer(const CommandBuffer&) = delete;
     CommandBuffer& operator=(const CommandBuffer&) = delete;
@@ -35,6 +34,8 @@ private:
     void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 
 public:
+    CommandBuffer(SwapChain& _swapChain);
+    ~CommandBuffer();
 
     // Todo: Move it somewhere
     void createVertexBuffer(Entity* vao, const std::vector<Vertex>& vertices);
@@ -46,11 +47,17 @@ public:
 
     // Todo: Consider a simplification
     void render(
-        const VkRenderPass& renderPass, 
+        Pipeline& pipeline,
         const std::vector<Framebuffer*>& swapChainFramebuffers, 
         const VkExtent2D& extent, 
-        const VkPipeline& graphicsPipeline,
-        const UniformBuffer& uniformBuffer,
+        const std::vector<Entity*>& vaos
+    );
+
+    void render(
+        uint32_t index,
+        Pipeline& pipeline,
+        const std::vector<Framebuffer*>& swapChainFramebuffers, 
+        const VkExtent2D& extent, 
         const std::vector<Entity*>& vaos
     );
 
@@ -59,9 +66,6 @@ public:
 
     const VkCommandPool& getCommandPool() const;
     const std::vector<VkCommandBuffer>& getCommandBuffers() const;
-
-    CommandBuffer(SwapChain& _swapChain, Pipeline& _pipeline);
-    ~CommandBuffer();
 };
 
 #endif

@@ -7,7 +7,8 @@
 
 struct UniformLayout
 {
-    VkDescriptorType type; 
+    VkDescriptorType type;
+    VkShaderStageFlags stageFlags { VK_SHADER_STAGE_ALL_GRAPHICS };
 
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;

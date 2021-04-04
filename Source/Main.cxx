@@ -1,6 +1,14 @@
 #include "Core/App.hpp"
 
-int main()
+#ifdef WIN_MAIN_ENTRY
+	#include <Windows.h>
+#endif
+
+#ifdef WIN_MAIN_ENTRY
+	int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,int nShowCmd)
+#else
+	int main()
+#endif
 {
 	App app;
 	

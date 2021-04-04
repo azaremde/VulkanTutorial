@@ -33,14 +33,13 @@ private:
     UniformBuffer& operator=(const UniformBuffer&) = delete;
 
 public:
-    std::vector<UniformLayout> layouts;
+    // std::vector<UniformLayout> layouts;
     
     void updateUniformBuffer(uint32_t imageIndex, uint32_t index, uint32_t size, void* data);
 
     UniformBuffer(
         SwapChain& _swapChain, 
         Pipeline& _pipeline, 
-        std::vector<UniformLayout> _layouts,
         std::vector<Entity*>& _entities
     );
 
