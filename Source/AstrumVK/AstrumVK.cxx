@@ -5,21 +5,6 @@
 #include "Assets/ImageAsset.hpp"
 #include "Assets/MeshAsset.hpp"
 
-// Wrapper functions for aligned memory allocation
-// There is currently no standard for this in C++ that works across all platforms and vendors, so we abstract this
-void* alignedAlloc(size_t size, size_t alignment)
-{
-	void *data = nullptr;
-#if defined(_MSC_VER) || defined(__MINGW32__)
-	data = _aligned_malloc(size, alignment);
-#else
-	int res = posix_memalign(&data, alignment, size);
-	if (res != 0)
-		data = nullptr;
-#endif
-	return data;
-}
-
 // Todo: move to its own class.
 void AstrumVK::createInstance()
 {
@@ -108,7 +93,7 @@ void AstrumVK::destroyGPU()
 
 void AstrumVK::createSwapChain()
 {
-    swapChain = new SwapChain(window, false);
+    swapChain = new SwapChain(window, true);
 }
 
 void AstrumVK::destroySwapChain()
@@ -138,16 +123,15 @@ void AstrumVK::createModels(const std::vector<ModelDescriptor>& models)
 
     dynamicLayout.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     dynamicLayout.binding = 0;
-    dynamicLayout.size = sizeof(DynamicUBO);
     dynamicLayout.instances = static_cast<uint32_t>(models.size());
 
     staticLayout.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    staticLayout.binding = 1;
     staticLayout.size = sizeof(StaticUBO);
+    staticLayout.binding = 1;
 
     imageLayout.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    imageLayout.size = 1;
     imageLayout.binding = 2;
-    imageLayout.size = sizeof(uint32_t);
 
     for (int i = 0; i < models.size(); i++)
     {
@@ -234,33 +218,28 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
         renderList
     );
 
-    ubos = (DynamicUBO*)alignedAlloc(uniformBuffer->layouts[0].bufferSize, uniformBuffer->layouts[0].dynamicAlignment);
+    dynamicUbos.allocate(uniformBuffer->layouts[0].bufferSize, uniformBuffer->layouts[0].dynamicAlignment);
 
+    // For the simplicity sake we're giving each entity pointer to its ubo.
     for (int i = 0; i < renderList.size(); i++)
     {
-        renderList[i]->ubo = getUbo(i);
-    }
-
-    for (int i = 0; i < renderList.size(); i++)
-    {
-        renderList[i]->ubo->model = glm::mat4x4(1);
+        renderList[i]->ubo = dynamicUbos[i];
+        renderList[i]->ubo->model = Mat4(1);
     }
 
     staticUbo.proj = glm::perspective(
-        glm::radians(70.0f), 
-        static_cast<float>(window.getWidth()) / static_cast<float>(window.getHeight()),
+        glm::radians(70.0f),
+        window.getRatio(),
         0.1f, 
-        1000.0f);
+        1000.0f
+    );
+
+    staticUbo.view = Mat4(1);
 
     for (uint32_t i = 0; i < swapChain->getImageCount(); i++)
     {
         uniformBuffer->updateUniformBuffer(i, 1, sizeof(StaticUBO), &staticUbo);
     }
-}
-
-DynamicUBO* AstrumVK::getUbo(uint32_t index)
-{
-    return (DynamicUBO*)(((uint64_t)ubos + (index * uniformBuffer->layouts[0].dynamicAlignment)));
 }
 
 AstrumVK::~AstrumVK()
@@ -290,27 +269,31 @@ void AstrumVK::drawFrame()
 
     theta += time.getDeltaTime() * 100.0f;
 
-    glm::mat4x4& model_0 = renderList[0]->ubo->model;
-    glm::mat4x4& model_1 = renderList[1]->ubo->model;
-    glm::mat4x4& model_2 = renderList[2]->ubo->model;
+    Mat4& model_0 = renderList[0]->ubo->model;
+    Mat4& model_1 = renderList[1]->ubo->model;
+    Mat4& model_2 = renderList[2]->ubo->model;
 
-    model_0 = glm::mat4x4(1);
-    model_0 = glm::translate(model_0, glm::vec3(1, 0, -10));
-    model_0 = glm::rotate(model_0, glm::radians(theta), glm::vec3(1, 0, 0));
-    model_0 = glm::rotate(model_0, glm::radians(theta), glm::vec3(0, 1, 0));
-    model_0 = glm::rotate(model_0, glm::radians(theta), glm::vec3(0, 0, 1));
+    model_0 = Mat4(1);
+    model_0 = glm::translate(model_0, Vec3(1, 0, -10));
+    model_0 = glm::rotate(model_0, glm::radians(theta), Vec3(0, 1, 0));
 
-    model_1 = glm::mat4x4(1);
-    model_1 = glm::translate(model_1, glm::vec3(3, 0, -20));
-    model_1 = glm::rotate(model_1, glm::radians(-90.0f), glm::vec3(1, 0, 0));
-    model_1 = glm::rotate(model_1, glm::radians(theta * 1.0f), glm::vec3(0, 0, 1));
-    model_1 = glm::scale(model_1, glm::vec3(0.01f));
+    model_1 = Mat4(1);
+    model_1 = glm::translate(model_1, Vec3(0, 0, 0));
+    model_1 = glm::rotate(model_1, glm::radians(-90.0f), Vec3(1, 0, 0));
+    model_1 = glm::rotate(model_1, glm::radians(theta * 1.0f), Vec3(0, 0, 1));
+    model_1 = glm::scale(model_1, Vec3(0.01f));
 
-    model_2 = glm::mat4x4(1);
-    model_2 = glm::translate(model_2, glm::vec3(1, 0, -10));
-    model_2 = glm::rotate(model_2, glm::radians(theta), glm::vec3(1, 0, 0));
-    model_2 = glm::rotate(model_2, glm::radians(theta), glm::vec3(0, 1, 0));
-    model_2 = glm::rotate(model_2, glm::radians(theta), glm::vec3(0, 0, 1));
+    model_2 = Mat4(1);
+    model_2 = glm::translate(model_2, Vec3(1, 0, -10));
+    model_2 = glm::rotate(model_2, glm::radians(theta), Vec3(0, 1, 0));
+
+    staticUbo.view = glm::lookAt(
+        Vec3(25 * glm::sin(glm::radians(theta / 10.0f)), -10, 25 * glm::cos(glm::radians(theta / 10.0f))),
+        Vec3(0),
+        Vec3(0, 1, 0)
+    );
+    
+    uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), 1, sizeof(StaticUBO), &staticUbo);
 
     static float timer { 0.0f };
 
@@ -337,7 +320,7 @@ void AstrumVK::drawFrame()
         );
     }
 
-    uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), 0, uniformBuffer->layouts[0].dynamicAlignment * uniformBuffer->layouts[0].instances, ubos);
+    uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), 0, uniformBuffer->layouts[0].dynamicAlignment * uniformBuffer->layouts[0].instances, renderList[0]->ubo);
     
     swapChain->acquireImage();
     swapChain->syncImagesInFlight();
@@ -379,7 +362,7 @@ void AstrumVK::onViewportResize(unsigned int newWidth, unsigned int newHeight)
 
     staticUbo.proj = glm::perspective(
         glm::radians(70.0f), 
-        static_cast<float>(window.getWidth()) / static_cast<float>(window.getHeight()),
+        window.getRatio(),
         0.1f, 
         1000.0f
     );

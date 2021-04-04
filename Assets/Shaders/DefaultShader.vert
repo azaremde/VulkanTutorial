@@ -19,7 +19,7 @@ layout(binding = 1) uniform StaticUBO {
 
 void main() 
 {
-    gl_Position = staticUBO.proj * dynamicUBO.model * vec4(inPosition, 1.0);
+    gl_Position = staticUBO.proj * staticUBO.view * dynamicUBO.model * vec4(inPosition, 1.0);
     fragColor = vec3(inColor, 1.0);
 
     fragTexCoords = inColor;

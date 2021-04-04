@@ -57,7 +57,11 @@ void UniformBuffer::allocateDescriptorSets(uint32_t entityIndex)
             VkDescriptorBufferInfo bufferInfo{};
             bufferInfo.buffer = layouts[j].uniformBuffers[i];
             bufferInfo.offset = 0;
-            bufferInfo.range = layouts[j].size;
+            bufferInfo.range = VK_WHOLE_SIZE;
+
+            // OR
+            // bufferInfo.range = layouts[j].size;
+
             bufferInfos[j] = bufferInfo;
 
             if (layouts[j].type != VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
@@ -109,28 +113,46 @@ void UniformBuffer::createUniformBuffers()
 {
     for (size_t i = 0; i < layouts.size(); i++)
     {
-        uint32_t deviceAlignment = static_cast<uint32_t>(GPU::props.limits.minUniformBufferOffsetAlignment);
-        uint32_t uniformBufferSize = layouts[i].size;    
-        
-        layouts[i].dynamicAlignment = (uniformBufferSize / deviceAlignment) * deviceAlignment + ((uniformBufferSize % deviceAlignment) > 0 ? deviceAlignment : 0);
-
-        // Old variant:
-        // layouts[i].bufferSize = (uniformBufferSize) * (layouts[i].instances == 0 ? 1 : layouts[i].instances) * layouts[i].dynamicAlignment;
-
-        layouts[i].bufferSize = (uniformBufferSize + layouts[i].dynamicAlignment) * (layouts[i].instances == 0 ? 1 : layouts[i].instances);
-
-        layouts[i].uniformBuffers.resize(swapChain.getImageCount());
-        layouts[i].uniformBuffersMemory.resize(swapChain.getImageCount());
-
-        for (size_t j = 0; j < swapChain.getImageCount(); j++) 
+        if (layouts[i].instances > 0)
         {
-            GPU::createBuffer(
-                layouts[i].bufferSize, 
-                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                layouts[i].uniformBuffers[j], 
-                layouts[i].uniformBuffersMemory[j]
-            );
+            uint32_t deviceAlignment = static_cast<uint32_t>(GPU::props.limits.minUniformBufferOffsetAlignment);
+            uint32_t uniformBufferSize = layouts[i].size;    
+            
+            layouts[i].dynamicAlignment = (uniformBufferSize / deviceAlignment) * deviceAlignment + ((uniformBufferSize % deviceAlignment) > 0 ? deviceAlignment : 0);
+
+            // Old variant:
+            // layouts[i].bufferSize = (uniformBufferSize) * (layouts[i].instances == 0 ? 1 : layouts[i].instances) * layouts[i].dynamicAlignment;
+            layouts[i].bufferSize = (uniformBufferSize + layouts[i].dynamicAlignment) * (layouts[i].instances == 0 ? 1 : layouts[i].instances);
+
+            layouts[i].uniformBuffers.resize(swapChain.getImageCount());
+            layouts[i].uniformBuffersMemory.resize(swapChain.getImageCount());
+
+            for (size_t j = 0; j < swapChain.getImageCount(); j++) 
+            {
+                GPU::createBuffer(
+                    layouts[i].bufferSize, 
+                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
+                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                    layouts[i].uniformBuffers[j], 
+                    layouts[i].uniformBuffersMemory[j]
+                );
+            }
+        }
+        else
+        {
+            layouts[i].uniformBuffers.resize(swapChain.getImageCount());
+            layouts[i].uniformBuffersMemory.resize(swapChain.getImageCount());
+
+            for (size_t j = 0; j < swapChain.getImageCount(); j++) 
+            {
+                GPU::createBuffer(
+                    layouts[i].size, 
+                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
+                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                    layouts[i].uniformBuffers[j], 
+                    layouts[i].uniformBuffersMemory[j]
+                );
+            }
         }
     }
 }

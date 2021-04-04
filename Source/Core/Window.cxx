@@ -70,6 +70,11 @@ unsigned int Window::getHeight() const
     return height;
 }
 
+float Window::getRatio() const
+{
+    return static_cast<float>(width) / static_cast<float>(height);
+}
+
 std::string Window::getTitle() const
 {
     return title;

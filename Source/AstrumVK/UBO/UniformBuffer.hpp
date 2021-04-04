@@ -8,28 +8,8 @@
 #include "AstrumVK/GPU/GPU.hpp"
 #include "AstrumVK/SwapChain/SwapChain.hpp"
 #include "AstrumVK/Pipeline/Pipeline.hpp"
-
 #include "AstrumVK/Entities/Entity.hpp"
-
-struct UniformLayout
-{
-    VkDescriptorType type; 
-
-    std::vector<VkBuffer> uniformBuffers;
-    std::vector<VkDeviceMemory> uniformBuffersMemory;
-    
-    uint32_t size { 0 };
-    uint32_t binding { 0 };
-    uint32_t instances { 0 };   // UboIsDynamic = instances > 0
-
-    uint32_t dynamicAlignment { 0 };
-    uint32_t bufferSize { 0 };
-
-    bool dynamic { false };     // Reserved for future use.
-
-    std::vector<VkImageView> imageViews;
-    std::vector<VkSampler> samplers;
-};
+#include "UniformBufferLayout.hpp"
 
 class UniformBuffer
 {

@@ -40,6 +40,7 @@ public:
 
     unsigned int    getWidth() const;
     unsigned int    getHeight() const;
+    float           getRatio() const;
     std::string     getTitle() const;
     GLFWwindow*     getGlfwWindow();
 };

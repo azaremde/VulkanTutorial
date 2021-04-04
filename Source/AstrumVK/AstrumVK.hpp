@@ -14,6 +14,7 @@
 #include "UBO/UniformBuffer.hpp"
 #include "UBO/Predefined/StaticUBO.hpp"
 #include "UBO/Predefined/DynamicUBO.hpp"
+#include "UBO/UBOHost.hpp"
 #include "Textures/Texture2D.hpp"
 #include "Time.hpp"
 
@@ -61,8 +62,7 @@ private:
     void createCommandBuffer();
     void destroyCommandBuffer();
 
-    DynamicUBO* ubos = new DynamicUBO[2];
-    DynamicUBO* getUbo(uint32_t index);
+    UBOHost<DynamicUBO> dynamicUbos;
 
     StaticUBO staticUbo;
 
