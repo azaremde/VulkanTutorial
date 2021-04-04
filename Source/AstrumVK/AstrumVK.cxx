@@ -138,15 +138,13 @@ void AstrumVK::createModels(const std::vector<ModelDescriptor>& models)
         MeshAsset* model = loadModelAsset(models[i].modelFilename);
         ImageAsset* image = loadImageAsset(models[i].textureFilename);
 
-        Texture2D* img = new Texture2D(*commandBuffer, image);
-
         Entity* entity = new Entity();
         commandBuffer->createVertexBuffer(entity, model->vertices);
         commandBuffer->createIndexBuffer(entity, model->indices);
-        entity->albedoColor = img;
+        entity->albedoColor = new Texture2D(*commandBuffer, image);
 
-        imageLayout.imageViews.emplace_back(img->getImageView());
-        imageLayout.samplers.emplace_back(img->getSampler());
+        imageLayout.imageViews.emplace_back(entity->albedoColor->getImageView());
+        imageLayout.samplers.emplace_back(entity->albedoColor->getSampler());
 
         renderList.emplace_back(entity);
 
