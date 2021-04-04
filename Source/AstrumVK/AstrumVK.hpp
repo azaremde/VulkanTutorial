@@ -62,9 +62,10 @@ private:
     void createCommandBuffer();
     void destroyCommandBuffer();
 
-    UBOHost<DynamicUBO> dynamicUbos;
+    UBOHost<DynamicUBO, true> dynamicUbos;
+    UBOHost<StaticUBO> staticUbos;
 
-    StaticUBO staticUbo;
+    // StaticUBO staticUbo;
 
     std::vector<Entity*> renderList;
 

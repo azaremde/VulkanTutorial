@@ -158,6 +158,8 @@ void AstrumVK::createModels(const std::vector<ModelDescriptor>& models)
         { dynamicLayout, staticLayout, imageLayout },
         renderList
     );
+
+    dynamicUbos.allocate(uniformBuffer->layouts[0]);
 }
 
 void AstrumVK::destroyUniformBuffer()
@@ -216,9 +218,6 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
         renderList
     );
 
-    dynamicUbos.layout = uniformBuffer->layouts[0];
-    dynamicUbos.allocate(uniformBuffer->layouts[0].bufferSize, uniformBuffer->layouts[0].dynamicAlignment);
-
     // For the simplicity sake we're giving each entity pointer to its ubo.
     for (int i = 0; i < renderList.size(); i++)
     {
@@ -226,18 +225,35 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
         renderList[i]->ubo->model = Mat4(1);
     }
 
-    staticUbo.proj = glm::perspective(
+    staticUbos.allocate(uniformBuffer->layouts[1]);
+
+    staticUbos[0]->proj = glm::perspective(
         glm::radians(70.0f),
         window.getRatio(),
         0.1f, 
         1000.0f
     );
 
-    staticUbo.view = Mat4(1);
+    staticUbos[0]->view = Mat4(1);
+
+    // staticUbo.proj = glm::perspective(
+    //     glm::radians(70.0f),
+    //     window.getRatio(),
+    //     0.1f, 
+    //     1000.0f
+    // );
+
+    // staticUbo.view = Mat4(1);
+
+    // for (uint32_t i = 0; i < swapChain->getImageCount(); i++)
+    // {
+    //     uniformBuffer->updateUniformBuffer(i, 1, sizeof(StaticUBO), &staticUbo);
+    // }
 
     for (uint32_t i = 0; i < swapChain->getImageCount(); i++)
     {
-        uniformBuffer->updateUniformBuffer(i, 1, sizeof(StaticUBO), &staticUbo);
+        staticUbos.update(i);
+        // uniformBuffer->updateUniformBuffer(i, 1, sizeof(StaticUBO), &staticUbo);
     }
 }
 
@@ -286,13 +302,19 @@ void AstrumVK::drawFrame()
     model_2 = glm::translate(model_2, Vec3(1, 0, -10));
     model_2 = glm::rotate(model_2, glm::radians(theta), Vec3(0, 1, 0));
 
-    staticUbo.view = glm::lookAt(
+    // staticUbo.view = glm::lookAt(
+    //     Vec3(25 * glm::sin(glm::radians(theta / 10.0f)), -10, 25 * glm::cos(glm::radians(theta / 10.0f))),
+    //     Vec3(0),
+    //     Vec3(0, 1, 0)
+    // );
+    staticUbos[0]->view = glm::lookAt(
         Vec3(25 * glm::sin(glm::radians(theta / 10.0f)), -10, 25 * glm::cos(glm::radians(theta / 10.0f))),
         Vec3(0),
         Vec3(0, 1, 0)
     );
     
-    uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), 1, sizeof(StaticUBO), &staticUbo);
+    // uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), 1, sizeof(StaticUBO), &staticUbo);
+    staticUbos.update(swapChain->getImageIndex());
 
     static float timer { 0.0f };
 
@@ -319,7 +341,6 @@ void AstrumVK::drawFrame()
         );
     }
     
-    // uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), 0, uniformBuffer->layouts[0].dynamicAlignment * uniformBuffer->layouts[0].instances, dynamicUbos[0]);
     dynamicUbos.update(swapChain->getImageIndex());
     
     swapChain->acquireImage();
@@ -360,7 +381,14 @@ void AstrumVK::onViewportResize(unsigned int newWidth, unsigned int newHeight)
         renderList
     );
 
-    staticUbo.proj = glm::perspective(
+    // staticUbo.proj = glm::perspective(
+    //     glm::radians(70.0f), 
+    //     window.getRatio(),
+    //     0.1f, 
+    //     1000.0f
+    // );
+
+    staticUbos[0]->proj = glm::perspective(
         glm::radians(70.0f), 
         window.getRatio(),
         0.1f, 
@@ -369,6 +397,7 @@ void AstrumVK::onViewportResize(unsigned int newWidth, unsigned int newHeight)
 
     for (uint32_t i = 0; i < swapChain->getImageCount(); i++)
     {
-        uniformBuffer->updateUniformBuffer(i, 1, sizeof(StaticUBO), &staticUbo);
+        // uniformBuffer->updateUniformBuffer(i, 1, sizeof(StaticUBO), &staticUbo);
+        staticUbos.update(i);
     }
 }
