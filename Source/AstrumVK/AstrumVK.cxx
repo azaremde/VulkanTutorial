@@ -320,7 +320,7 @@ void AstrumVK::drawFrame()
         );
     }
 
-    uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), 0, uniformBuffer->layouts[0].dynamicAlignment * uniformBuffer->layouts[0].instances, renderList[0]->ubo);
+    uniformBuffer->updateUniformBuffer(swapChain->getImageIndex(), 0, uniformBuffer->layouts[0].dynamicAlignment * uniformBuffer->layouts[0].instances, dynamicUbos[0]);
     
     swapChain->acquireImage();
     swapChain->syncImagesInFlight();
