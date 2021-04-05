@@ -7,7 +7,6 @@
 
 #include "AstrumVK/Instance/Instance.hpp"
 
-// Todo: move to its own class.
 void AstrumVK::createInstance()
 {
     Instance::create(window);
@@ -60,7 +59,7 @@ void AstrumVK::destroySwapChain()
 
 void AstrumVK::createPipeline()
 {
-    uint32_t amountOfModels { 3 };
+    uint32_t amountOfModels { 2 };
 
     UniformLayout dynamicLayout{};
     UniformLayout staticLayout{};
@@ -188,7 +187,6 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
 
     createEntities({
         { "Assets/Models/cube.obj", "Assets/Images/texture.jpg" },
-        { "Assets/Models/base.fbx", "Assets/Images/diffuse.png" },
         { "Assets/Models/base.fbx", "Assets/Images/diffuse.png" }
     });
 
@@ -226,24 +224,18 @@ void AstrumVK::updateScene()
 
     Mat4& model_0 = renderList[0]->ubo->model;
     Mat4& model_1 = renderList[1]->ubo->model;
-    Mat4& model_2 = renderList[2]->ubo->model;
 
     model_0 = Mat4(1);
     model_0 = glm::translate(model_0, Vec3(1, 0, -10));
-    model_0 = glm::rotate(model_0, glm::radians(theta), Vec3(0, 1, 0));
 
     model_1 = Mat4(1);
-    model_1 = glm::translate(model_1, Vec3(0, 0, 0));
     model_1 = glm::rotate(model_1, glm::radians(-90.0f), Vec3(1, 0, 0));
-    model_1 = glm::rotate(model_1, glm::radians(theta * 1.0f), Vec3(0, 0, 1));
     model_1 = glm::scale(model_1, Vec3(0.01f));
 
-    model_2 = Mat4(1);
-    model_2 = glm::translate(model_2, Vec3(1, 0, -10));
-    model_2 = glm::rotate(model_2, glm::radians(theta), Vec3(0, 1, 0));
+    dynamicUbos.update(swapChain->getImageIndex());
 
     staticUbos.get().view = glm::lookAt(
-        Vec3(25 * glm::sin(glm::radians(theta / 10.0f)), -10, 25 * glm::cos(glm::radians(theta / 10.0f))),
+        Vec3(25 * glm::sin(glm::radians(theta / 5.0f)), -10, 25 * glm::cos(glm::radians(theta / 5.0f))),
         Vec3(0),
         Vec3(0, 1, 0)
     );
@@ -266,7 +258,6 @@ void AstrumVK::drawFrame()
         fpsTimer.reset();
     }
     
-    dynamicUbos.update(swapChain->getImageIndex());
     
     swapChain->acquireImage();
     swapChain->submit(commandBuffer->getCommandBuffers());
