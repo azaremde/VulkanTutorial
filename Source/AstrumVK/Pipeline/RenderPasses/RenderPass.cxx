@@ -1,6 +1,5 @@
 #include "RenderPass.hpp"
 
-// Todo: Add settings on creation
 RenderPass::RenderPass(SwapChain& _swapChain) : swapChain { _swapChain }
 {
     VkAttachmentDescription color{}, depth{};
