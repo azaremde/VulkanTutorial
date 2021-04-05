@@ -82,12 +82,16 @@ void AstrumVK::createPipeline()
 
     defaultShader = new Shader("Assets/Shaders/DefaultShader.vert.spv", "Assets/Shaders/DefaultShader.frag.spv");
 
-    pipeline = new Pipeline(*swapChain, *defaultShader, { dynamicLayout, staticLayout, imageLayout });
+    renderPass = new RenderPass(*swapChain);
+
+    pipeline = new Pipeline(*swapChain, *defaultShader, *renderPass, { dynamicLayout, staticLayout, imageLayout });
 }
 
 void AstrumVK::destroyPipeline()
 {
     delete pipeline;
+
+    delete renderPass;
 
     delete defaultShader;
 }

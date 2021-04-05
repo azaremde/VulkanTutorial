@@ -45,6 +45,7 @@ private:
     void destroySwapChain();
 
     Shader* defaultShader;
+    RenderPass* renderPass;
     Pipeline* pipeline;
     void createPipeline();
     void destroyPipeline();

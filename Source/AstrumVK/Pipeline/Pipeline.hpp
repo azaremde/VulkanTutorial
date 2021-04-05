@@ -69,16 +69,15 @@ private:
     void createPipelineLayout();
     void destroyPipelineLayout();
 
-    RenderPass* renderPass;
-    void createRenderPass();
-    void destroyRenderPass();
 
     VkPipeline pipeline;
     void createPipeline();
     void destroyPipeline();
 
     SwapChain& swapChain;
+
     Shader& shader;
+    RenderPass& renderPass;
 
     Pipeline(const Pipeline&) = delete;
     Pipeline& operator=(const Pipeline&) = delete;
@@ -94,7 +93,7 @@ public:
     std::vector<UniformLayout>& getUniformLayouts();
 
     // Pipeline(SwapChain& _swapChain, Shader& _shader);
-    Pipeline(SwapChain& _swapChain, Shader& _shader, const std::vector<UniformLayout>& _uniformLayouts);
+    Pipeline(SwapChain& _swapChain, Shader& _shader, RenderPass& _renderPass, const std::vector<UniformLayout>& _uniformLayouts);
     ~Pipeline();
 
     const VkPipelineLayout& getPipelineLayout() const;

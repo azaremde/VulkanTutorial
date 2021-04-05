@@ -39,37 +39,6 @@ void Pipeline::createDescriptorSetLayout()
         bindings.emplace_back(binding);
     }
 
-    // for (int i = 0; i < uniformLayouts.size(); i++)
-    // {
-    //     VkDescriptorSetLayoutBinding binding{};
-    //     binding.binding = 
-    // }
-
-    // Todo: DO SOMETHING WITH THIS!!
-    // VkDescriptorSetLayoutBinding dynamicBinding0{};
-    // dynamicBinding0.binding = 0;
-    // dynamicBinding0.descriptorCount = 1;
-    // dynamicBinding0.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    // dynamicBinding0.pImmutableSamplers = nullptr;
-    // dynamicBinding0.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    // bindings.emplace_back(dynamicBinding0);
-
-    // VkDescriptorSetLayoutBinding staticBinding1{};
-    // staticBinding1.binding = 1;
-    // staticBinding1.descriptorCount = 1;
-    // staticBinding1.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    // staticBinding1.pImmutableSamplers = nullptr;
-    // staticBinding1.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    // bindings.emplace_back(staticBinding1);
-    
-    // VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-    // samplerLayoutBinding.binding = 2;
-    // samplerLayoutBinding.descriptorCount = 1;
-    // samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    // samplerLayoutBinding.pImmutableSamplers = nullptr;
-    // samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-    // bindings.emplace_back(samplerLayoutBinding);
-
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -230,16 +199,6 @@ void Pipeline::destroyPipelineLayout()
     vkDestroyPipelineLayout(GPU::getDevice(), pipelineLayout, nullptr);
 }
 
-void Pipeline::createRenderPass()
-{
-    renderPass = new RenderPass(swapChain);
-}
-
-void Pipeline::destroyRenderPass()
-{
-    delete renderPass;
-}
-
 void Pipeline::createPipeline()
 {
     VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -255,7 +214,7 @@ void Pipeline::createPipeline()
     pipelineInfo.pColorBlendState = &fixed.colorBlending;
     pipelineInfo.pDynamicState = nullptr; // Optional
     pipelineInfo.layout = pipelineLayout;
-    pipelineInfo.renderPass = renderPass->getRenderPass();
+    pipelineInfo.renderPass = renderPass.getRenderPass();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1; // Optional
@@ -292,7 +251,6 @@ void Pipeline::createGraphicsPipeline()
     fixed.setDynamicStates();
     
     createPipelineLayout();
-    createRenderPass();
     createPipeline();
 }
 
@@ -300,18 +258,12 @@ void Pipeline::destroyGraphicsPipeline()
 {
     destroyDescriptorSetLayout();
     destroyPipeline();
-    destroyRenderPass();
     destroyPipelineLayout();
 
     DebugLogOut("Graphics pipeline destroyed.");
 }
 
-// Pipeline::Pipeline(SwapChain& _swapChain, Shader& _shader) : swapChain { _swapChain }, shader { _shader }
-// {
-//     createGraphicsPipeline();
-// }
-
-Pipeline::Pipeline(SwapChain& _swapChain, Shader& _shader, const std::vector<UniformLayout>& _uniformLayouts) : swapChain { _swapChain }, shader { _shader }, uniformLayouts { _uniformLayouts }
+Pipeline::Pipeline(SwapChain& _swapChain, Shader& _shader, RenderPass& _renderPass, const std::vector<UniformLayout>& _uniformLayouts) : swapChain { _swapChain }, shader { _shader }, renderPass { _renderPass }, uniformLayouts { _uniformLayouts }
 {
     createGraphicsPipeline();
 }
@@ -328,7 +280,7 @@ const VkPipeline& Pipeline::getPipeline() const
 
 const VkRenderPass& Pipeline::getRenderPass() const
 {
-    return renderPass->getRenderPass();
+    return renderPass.getRenderPass();
 }
 
 std::vector<UniformLayout>& Pipeline::getUniformLayouts()
