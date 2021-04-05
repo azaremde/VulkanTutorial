@@ -5,6 +5,8 @@
 
 #include "Pch.hpp"
 
+#include "Instance/Instance.hpp"
+
 class Debug
 {
 public:
@@ -17,21 +19,20 @@ public:
 	inline static VkDebugUtilsMessengerEXT messenger;
 	inline static const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
 
-	static void createMessenger(const VkInstance& instance);
-	static void destroyMessenger(const VkInstance& instance);
+	static void createMessenger();
+	static void destroyMessenger();
 
 	static void populateCreateInfoStruct(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 
 	inline static VkResult createDebugUtilsMessengerEXT(
-		VkInstance instance,
 		const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
 		const VkAllocationCallbacks* pAllocator,
 		VkDebugUtilsMessengerEXT* pDebugMessenger
 	)
 	{
-		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(Instance::getInstance(), "vkCreateDebugUtilsMessengerEXT");
 		if (func != nullptr) {
-			return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+			return func(Instance::getInstance(), pCreateInfo, pAllocator, pDebugMessenger);
 		}
 		else {
 			return VK_ERROR_EXTENSION_NOT_PRESENT;
@@ -39,14 +40,13 @@ public:
 	}
 	
 	inline static void destroyDebugUtilsMessengerEXT(
-		VkInstance instance,
 		VkDebugUtilsMessengerEXT debugMessenger,
 		const VkAllocationCallbacks* pAllocator
 	)
 	{
-		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(Instance::getInstance(), "vkDestroyDebugUtilsMessengerEXT");
 		if (func != nullptr) {
-			func(instance, debugMessenger, pAllocator);
+			func(Instance::getInstance(), debugMessenger, pAllocator);
 		}
 	}
 

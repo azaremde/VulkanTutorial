@@ -27,7 +27,7 @@ void Debug::populateCreateInfoStruct(VkDebugUtilsMessengerCreateInfoEXT& createI
     createInfo.pUserData = nullptr; // Optional
 }
 
-void Debug::createMessenger(const VkInstance& instance)
+void Debug::createMessenger()
 {
     if (!validationLayersEnabled)
     {
@@ -38,19 +38,19 @@ void Debug::createMessenger(const VkInstance& instance)
     populateCreateInfoStruct(createInfo);
 
     VK_CHECK(
-        createDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &messenger),
+        createDebugUtilsMessengerEXT(&createInfo, nullptr, &messenger),
         "Failed to set up debug messenger."
     );
 }
 
-void Debug::destroyMessenger(const VkInstance& instance)
+void Debug::destroyMessenger()
 {
     if (!validationLayersEnabled)
     {
         return;
     }
 
-    destroyDebugUtilsMessengerEXT(instance, messenger, nullptr);
+    destroyDebugUtilsMessengerEXT(messenger, nullptr);
 }
 
 bool Debug::checkValidationLayerSupport()

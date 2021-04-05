@@ -5,7 +5,7 @@
 void GPU::pickPhysicalDevice()
 {    
     uint32_t deviceCount = 0;
-    vkEnumeratePhysicalDevices(*instance, &deviceCount, nullptr);
+    vkEnumeratePhysicalDevices(Instance::getInstance(), &deviceCount, nullptr);
 
     if (deviceCount == 0) 
     {
@@ -13,7 +13,7 @@ void GPU::pickPhysicalDevice()
     }
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(*instance, &deviceCount, devices.data());
+    vkEnumeratePhysicalDevices(Instance::getInstance(), &deviceCount, devices.data());
 
     for (const auto& device : devices) 
     {

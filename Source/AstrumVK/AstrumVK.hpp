@@ -27,7 +27,7 @@ struct EntityDescriptor
 class AstrumVK : public IOnViewportResize
 {
 private:
-    VkInstance instance;
+    // VkInstance instance;
     void createInstance();
     void destroyInstance();
 

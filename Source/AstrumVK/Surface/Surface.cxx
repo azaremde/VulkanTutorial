@@ -1,12 +1,11 @@
 #include "Surface.hpp"
 
-void Surface::create(VkInstance* _instance, Window* _window)
+void Surface::create(Window* _window)
 {
-    instance = _instance;
     window = _window;
 
     VK_CHECK(
-        glfwCreateWindowSurface(*instance, window->getGlfwWindow(), nullptr, &surface),
+        glfwCreateWindowSurface(Instance::getInstance(), window->getGlfwWindow(), nullptr, &surface),
         "Failed to create surface"
     );
 
@@ -15,7 +14,7 @@ void Surface::create(VkInstance* _instance, Window* _window)
 
 void Surface::destroy()
 {    
-    vkDestroySurfaceKHR(*instance, surface, nullptr);
+    vkDestroySurfaceKHR(Instance::getInstance(), surface, nullptr);
 
     DebugLogOut("Surface destroyed.");
 }

@@ -244,7 +244,7 @@ void CommandBuffer::createCommandBuffers()
 
 void CommandBuffer::render(
     Pipeline& pipeline,
-    const std::vector<Framebuffer*>& swapChainFramebuffers, 
+    const std::vector<Framebuffer*>& targetFramebuffers, 
     const VkExtent2D& extent, 
     const std::vector<Entity*>& entities
 )
@@ -254,7 +254,7 @@ void CommandBuffer::render(
         render(
             i,
             pipeline,
-            swapChainFramebuffers,
+            targetFramebuffers,
             extent,
             entities
         );
@@ -264,7 +264,7 @@ void CommandBuffer::render(
 void CommandBuffer::render(
     uint32_t i,
     Pipeline& pipeline,
-    const std::vector<Framebuffer*>& swapChainFramebuffers, 
+    const std::vector<Framebuffer*>& targetFramebuffers, 
     const VkExtent2D& extent, 
     const std::vector<Entity*>& entities
 )
@@ -282,7 +282,7 @@ void CommandBuffer::render(
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = pipeline.getRenderPass();
-    renderPassInfo.framebuffer = swapChainFramebuffers[i]->getFramebuffer();
+    renderPassInfo.framebuffer = targetFramebuffers[i]->getFramebuffer();
 
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = extent;
@@ -323,6 +323,7 @@ void CommandBuffer::render(
     }
 
     vkCmdEndRenderPass(commandBuffers[i]);
+    
     VK_CHECK(
         vkEndCommandBuffer(commandBuffers[i]),
         "Failed to record command buffer."

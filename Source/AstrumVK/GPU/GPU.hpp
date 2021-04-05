@@ -9,6 +9,7 @@
 #include "SwapChainSupportDetails.hpp"
 
 #include "AstrumVK/Surface/Surface.hpp"
+#include "AstrumVK/Instance/Instance.hpp"
 
 class GPU
 {
@@ -32,8 +33,6 @@ private:
     
     static bool isDeviceSuitable(const VkPhysicalDevice& physicalDevice);
 
-    inline static VkInstance* instance;
-
     inline static const std::vector<const char*> deviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
@@ -47,10 +46,8 @@ private:
     ~GPU();
 
 public:
-    inline static void create(VkInstance* _instance)
+    inline static void create()
     {
-        instance = _instance;
-
         pickPhysicalDevice();
         createLogicalDevice();
         retrieveQueues();
