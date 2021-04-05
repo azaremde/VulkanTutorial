@@ -246,7 +246,7 @@ void CommandBuffer::render(
     Pipeline& pipeline,
     const std::vector<Framebuffer*>& swapChainFramebuffers, 
     const VkExtent2D& extent, 
-    const std::vector<Entity*>& vaos
+    const std::vector<Entity*>& entities
 )
 {
     for (uint32_t i = 0; i < commandBuffers.size(); i++)
@@ -256,7 +256,7 @@ void CommandBuffer::render(
             pipeline,
             swapChainFramebuffers,
             extent,
-            vaos
+            entities
         );
     }
 }
@@ -266,13 +266,13 @@ void CommandBuffer::render(
     Pipeline& pipeline,
     const std::vector<Framebuffer*>& swapChainFramebuffers, 
     const VkExtent2D& extent, 
-    const std::vector<Entity*>& vaos
+    const std::vector<Entity*>& entities
 )
 {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags = 0; // Optional
-    beginInfo.pInheritanceInfo = nullptr; // Optional
+    beginInfo.flags = 0;                    // Optional
+    beginInfo.pInheritanceInfo = nullptr;   // Optional
 
     VK_CHECK(
         vkBeginCommandBuffer(commandBuffers[i], &beginInfo),
@@ -297,12 +297,12 @@ void CommandBuffer::render(
     vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getPipeline());
 
-    VkDeviceSize offsets[] = {0};
+    VkDeviceSize offsets[] = { 0 };
 
-    for (size_t j = 0; j < vaos.size(); j++)
+    for (size_t j = 0; j < entities.size(); j++)
     {            
-        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &vaos[j]->buffer, offsets);
-        vkCmdBindIndexBuffer(commandBuffers[i], vaos[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, &entities[j]->buffer, offsets);
+        vkCmdBindIndexBuffer(commandBuffers[i], entities[j]->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
         uint32_t dynamicOffset = static_cast<uint32_t>(j) * pipeline.getUniformLayouts()[0].dynamicAlignment;
 
@@ -314,12 +314,12 @@ void CommandBuffer::render(
             pipeline.getPipelineLayout(), 
             0, 
             1,
-            &vaos[j]->descriptorSets[i],
+            &entities[j]->descriptorSets[i],
             static_cast<uint32_t>(dynamicOffsets.size()),
             dynamicOffsets.data()
         );
         
-        vkCmdDrawIndexed(commandBuffers[i], vaos[j]->indexCount, 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffers[i], entities[j]->indexCount, 1, 0, 0, 0);
     }
 
     vkCmdEndRenderPass(commandBuffers[i]);

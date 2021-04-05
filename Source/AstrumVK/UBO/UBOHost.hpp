@@ -43,10 +43,15 @@ public:
         }
     }
 
-    T* operator[](int i)
+    inline T* operator[](int i)
     {
         return (T*)((uint64_t)data + (i * dynamicAlignment));
     }  
+
+    inline T& get()
+    {
+        return *data;
+    }
 
     inline void update(int i)
     {

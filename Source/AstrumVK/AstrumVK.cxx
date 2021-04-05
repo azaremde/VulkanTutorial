@@ -136,9 +136,9 @@ void AstrumVK::destroyPipeline()
     delete defaultShader;
 }
 
-void AstrumVK::createModels(const std::vector<ModelDescriptor>& models)
+void AstrumVK::createEntities(const std::vector<EntityDescriptor>& models)
 {
-    for (int i = 0; i < models.size(); i++)
+    for (uint32_t i = 0; i < models.size(); i++)
     {
         MeshAsset* model = loadModelAsset(models[i].modelFilename);
         ImageAsset* image = loadImageAsset(models[i].textureFilename);
@@ -156,9 +156,14 @@ void AstrumVK::createModels(const std::vector<ModelDescriptor>& models)
         delete model;
         delete image;
     }
+}
 
+void AstrumVK::createUniformBuffer()
+{
     uniformBuffer = new UniformBuffer(*swapChain, *pipeline, renderList);
+
     dynamicUbos.allocate(pipeline->getUniformLayouts()[0]);
+    staticUbos.allocate(pipeline->getUniformLayouts()[1]);
 }
 
 void AstrumVK::destroyUniformBuffer()
@@ -186,6 +191,30 @@ void AstrumVK::destroyCommandBuffer()
     delete commandBuffer;
 }
 
+void AstrumVK::prepareScene()
+{
+    // For the simplicity sake we're giving each entity pointer to its ubo.
+    for (int i = 0; i < renderList.size(); i++)
+    {
+        renderList[i]->ubo = dynamicUbos[i];
+        renderList[i]->ubo->model = Mat4(1);
+    }
+
+    staticUbos.get().proj = glm::perspective(
+        glm::radians(70.0f),
+        window.getRatio(),
+        0.1f, 
+        1000.0f
+    );
+
+    staticUbos.get().view = Mat4(1);
+
+    for (uint32_t i = 0; i < swapChain->getImageCount(); i++)
+    {
+        staticUbos.update(i);
+    }
+}
+
 AstrumVK::AstrumVK(Window& _window) : window { _window }
 {
     window.addOnViewportResizeSubscriber(this);
@@ -195,40 +224,22 @@ AstrumVK::AstrumVK(Window& _window) : window { _window }
     createSurface();
     createGPU();
     createSwapChain();
+
     createPipeline();
     createSwapChainFramebuffers();
     createCommandBuffer();
 
-    createModels({
+    createEntities({
         { "Assets/Models/cube.obj", "Assets/Images/texture.jpg" },
         { "Assets/Models/base.fbx", "Assets/Images/diffuse.png" },
         { "Assets/Models/base.fbx", "Assets/Images/diffuse.png" }
     });
 
+    createUniformBuffer();
+
     commandBuffer->render(*pipeline, swapChain->getFramebuffers(), swapChain->getExtent(), renderList);
 
-    // For the simplicity sake we're giving each entity pointer to its ubo.
-    for (int i = 0; i < renderList.size(); i++)
-    {
-        renderList[i]->ubo = dynamicUbos[i];
-        renderList[i]->ubo->model = Mat4(1);
-    }
-
-    staticUbos.allocate(pipeline->getUniformLayouts()[1]);
-
-    staticUbos[0]->proj = glm::perspective(
-        glm::radians(70.0f),
-        window.getRatio(),
-        0.1f, 
-        1000.0f
-    );
-
-    staticUbos[0]->view = Mat4(1);
-
-    for (uint32_t i = 0; i < swapChain->getImageCount(); i++)
-    {
-        staticUbos.update(i);
-    }
+    prepareScene();
 }
 
 AstrumVK::~AstrumVK()
@@ -250,10 +261,8 @@ AstrumVK::~AstrumVK()
     destroyInstance();
 }
 
-void AstrumVK::drawFrame()
+void AstrumVK::updateScene()
 {
-    time.beginFrame();
-
     static float theta { 0.0f };
 
     theta += time.getDeltaTime() * 100.0f;
@@ -276,36 +285,33 @@ void AstrumVK::drawFrame()
     model_2 = glm::translate(model_2, Vec3(1, 0, -10));
     model_2 = glm::rotate(model_2, glm::radians(theta), Vec3(0, 1, 0));
 
-    staticUbos[0]->view = glm::lookAt(
+    staticUbos.get().view = glm::lookAt(
         Vec3(25 * glm::sin(glm::radians(theta / 10.0f)), -10, 25 * glm::cos(glm::radians(theta / 10.0f))),
         Vec3(0),
         Vec3(0, 1, 0)
     );
     
     staticUbos.update(swapChain->getImageIndex());
+}
 
-    static float timer { 0.0f };
+void AstrumVK::drawFrame()
+{
+    time.beginFrame();
 
-    timer += time.getDeltaTime();
+    updateScene();
 
-    if (timer >= 1.0f)
+    fpsTimer.timer += time.getDeltaTime();
+
+    if (fpsTimer.ready())
     {
         window.setTitle(GPU::about.name + ", fps: " + std::to_string(time.getFps()));
 
-        timer = 0.0f;
-    }
-
-    if (glfwGetKey(window.getGlfwWindow(), GLFW_KEY_SPACE))
-    {
-        awaitDeviceIdle();
-
-        commandBuffer->render(*pipeline, swapChain->getFramebuffers(), swapChain->getExtent(), renderList);
+        fpsTimer.reset();
     }
     
     dynamicUbos.update(swapChain->getImageIndex());
     
     swapChain->acquireImage();
-    swapChain->syncImagesInFlight();
     swapChain->submit(commandBuffer->getCommandBuffers());
     swapChain->present();
 
@@ -335,7 +341,7 @@ void AstrumVK::onViewportResize(unsigned int newWidth, unsigned int newHeight)
 
     commandBuffer->render(*pipeline, swapChain->getFramebuffers(), swapChain->getExtent(), renderList);
 
-    staticUbos[0]->proj = glm::perspective(
+    staticUbos.get().proj = glm::perspective(
         glm::radians(70.0f), 
         window.getRatio(),
         0.1f, 

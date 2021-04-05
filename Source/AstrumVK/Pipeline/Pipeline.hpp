@@ -90,6 +90,7 @@ public:
     const VkPipeline& getPipeline() const;
     const VkRenderPass& getRenderPass() const;
 
+    // Todo: Add possibility to index them by their type.
     std::vector<UniformLayout>& getUniformLayouts();
 
     // Pipeline(SwapChain& _swapChain, Shader& _shader);

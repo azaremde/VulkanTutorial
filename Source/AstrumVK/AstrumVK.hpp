@@ -18,6 +18,12 @@
 #include "Textures/Texture2D.hpp"
 #include "Time.hpp"
 
+struct EntityDescriptor
+{
+    std::string modelFilename;
+    std::string textureFilename;
+};
+
 class AstrumVK : public IOnViewportResize
 {
 private:
@@ -44,17 +50,6 @@ private:
     void createPipeline();
     void destroyPipeline();
 
-    UniformBuffer* uniformBuffer;
-    void destroyUniformBuffer();
-
-    struct ModelDescriptor
-    {
-        std::string modelFilename;
-        std::string textureFilename;
-    };
-
-    void createModels(const std::vector<ModelDescriptor>& models);
-
     void createSwapChainFramebuffers();
     void destroySwapChainFramebuffers();
 
@@ -62,8 +57,32 @@ private:
     void createCommandBuffer();
     void destroyCommandBuffer();
 
+    void createEntities(const std::vector<EntityDescriptor>& models);
+
+    UniformBuffer* uniformBuffer;
+    void createUniformBuffer();
+    void destroyUniformBuffer();
+
     UBOHost<DynamicUBO, true> dynamicUbos;
     UBOHost<StaticUBO> staticUbos;
+    void prepareScene();
+    void updateScene();
+
+    struct FPSTimer {
+        float duration { 1.0f };
+        float timer    { 0.0f };
+
+        bool ready()
+        {
+            return timer >= duration;
+        }
+
+        void reset()
+        {
+            timer = 0.0f;
+        }
+
+    } fpsTimer;
 
     std::vector<Entity*> renderList;
 

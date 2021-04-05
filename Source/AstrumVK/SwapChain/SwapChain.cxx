@@ -210,8 +210,8 @@ void SwapChain::acquireImage()
     vkAcquireNextImageKHR(GPU::getDevice(), swapChain, UINT64_MAX, sync.imageAvailableSemaphores[sync.currentFrame], VK_NULL_HANDLE, &imageIndex);
 }
 
-void SwapChain::syncImagesInFlight()
-{
+void SwapChain::submit(const std::vector<VkCommandBuffer>& commandBuffers)
+{    
     // Check if a previous frame is using this image (i.e. there is its fence to wait on)
     if (sync.imagesInFlight[imageIndex] != VK_NULL_HANDLE) 
     {
@@ -220,10 +220,7 @@ void SwapChain::syncImagesInFlight()
 
     // Mark the image as now being in use by this frame
     sync.imagesInFlight[imageIndex] = sync.inFlightFences[sync.currentFrame];
-}
 
-void SwapChain::submit(const std::vector<VkCommandBuffer>& commandBuffers)
-{
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 

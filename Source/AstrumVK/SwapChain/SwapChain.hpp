@@ -90,7 +90,6 @@ public:
     void destroyFramebuffers();
 
     void acquireImage();
-    void syncImagesInFlight();
     void submit(const std::vector<VkCommandBuffer>& commandBuffers);
     void present();
     
