@@ -43,6 +43,7 @@
 #define VK_CHECK(what, err)\
     if (what != VK_SUCCESS)\
     {\
+        ErrOut(err);\
         throw std::runtime_error(err);\
     }
 
