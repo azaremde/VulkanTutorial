@@ -150,7 +150,7 @@ void AstrumVK::destroyCommandBuffer()
 
 void AstrumVK::prepareScene()
 {
-    // For the simplicity sake we're giving each entity pointer to its ubo.
+    // For the simplicity's sake we're giving each entity pointer to its ubo.
     for (int i = 0; i < renderList.size(); i++)
     {
         renderList[i]->ubo = dynamicUbos[i];
