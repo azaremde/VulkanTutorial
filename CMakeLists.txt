@@ -24,6 +24,12 @@ file(GLOB projectSrc
     Source/**/**/*.cxx
     Source/**/**/**/*.cxx
     Source/**/**/**/**/*.cxx
+
+    Source/*.cpp
+    Source/**/*.cpp
+    Source/**/**/*.cpp
+    Source/**/**/**/*.cpp
+    Source/**/**/**/**/*.cpp
 )
 
 add_executable(${targetName} ${projectSrc})
